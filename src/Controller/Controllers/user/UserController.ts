@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserUseCases } from '../../usecases/UserUseCases';
+import { UserUseCases } from '../../../usecases/UserUseCases';
 
 export class UserController {
   private userUseCases: UserUseCases;
@@ -8,6 +8,8 @@ export class UserController {
     this.userUseCases = userUseCases;
   }
 
+
+  //signup
   createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       console.log('Recieved signup request:', req.body);
@@ -24,6 +26,21 @@ export class UserController {
         res.status(400).json({ error: error.message });
       } else {
         res.status(500).json({ error: 'Failed to create user' });
+      }
+    }
+  };
+
+  signInUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, password } = req.body;
+     
+      const user = await this.userUseCases.signInUser(email, password);
+      res.status(200).json(user);
+    } catch (error: any) {
+      if (error.message === 'User not found' || error.message === 'Invalid password') {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Failed to sign in' });
       }
     }
   };

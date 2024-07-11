@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import MongoDB from '../db/MongoDB';
-import userRoutes from '../../interfaces/routes/UserRoutes';
+import userRoutes from '../routes/UserRoutes';
 
 dotenv.config();
 
@@ -13,7 +13,7 @@ const mongoDB = new MongoDB();
 mongoDB.connect()
 .then(() => {
     // console.log('Connected to MongoDB');
-    startServer(3000); // Adjust the port number as needed
+    startServer(3000); 
 })
 .catch(err => {
     console.error('Failed to connect to MongoDB:', err);
