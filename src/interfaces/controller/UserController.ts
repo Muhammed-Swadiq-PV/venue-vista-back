@@ -18,9 +18,13 @@ export class UserController {
       console.log('User created successfully:', user);
 
       res.status(201).json(user);
-    } catch (error) {
-      console.error('Error creating user:', error);
-      res.status(500).json({ error: 'Failed to create user' });
+    } catch (error: any) {
+      console.error('Error creating user:', error.message);
+      if (error.message === 'Email already exists') {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Failed to create user' });
+      }
     }
   };
 }

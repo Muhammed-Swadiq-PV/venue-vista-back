@@ -9,6 +9,10 @@ export class UserUseCases {
   }
 
   async createUser(user: UserEntity): Promise<UserEntity> {
+    const existingUser = await this.userRepository.findUserByEmail(user.email);
+    if (existingUser) {
+      throw new Error('Email already exists');
+    }
     return this.userRepository.createUser(user);
   }
 }

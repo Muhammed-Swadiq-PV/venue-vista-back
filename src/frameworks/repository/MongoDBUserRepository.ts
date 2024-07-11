@@ -1,3 +1,4 @@
+// MongoDBUserRepository.ts
 import { UserRepository } from '../../entity/repository/userRepository';
 import { UserEntity } from '../../entity/models/UserEntity';
 import mongoose, { Schema, Document, Model } from 'mongoose';
@@ -11,9 +12,12 @@ const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
 const UserModel: Model<UserEntity & Document> = mongoose.model('User', userSchema);
 
 export class MongoDBUserRepository implements UserRepository {
+  async findUserByEmail(email: string): Promise<UserEntity | null> {
+    return await UserModel.findOne({ email });
+  }
+
   async createUser(user: UserEntity): Promise<UserEntity> {
-    const createdUser = new UserModel(user);
-    await createdUser.save();
-    return createdUser.toObject();
+    const createdUser = await UserModel.create(user);
+    return createdUser;
   }
 }
