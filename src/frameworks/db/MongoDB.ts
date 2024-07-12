@@ -3,11 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// console.log(process.env.MONGO_URI)
 class MongoDB {
   private mongoURI: string;
 
   constructor() {
-    this.mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/mong';
+    this.mongoURI = process.env.MONGO_URI ||'';
   }
 
   public async connect(): Promise<void> {

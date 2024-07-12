@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import MongoDB from '../db/MongoDB';
 import userRoutes from '../routes/UserRoutes';
+import orgRoutes from '../routes/OrgRoutes';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use(express.json());
 
 // Use routes
 app.use('/api/users', userRoutes);
+app.use('/api/organizer', orgRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
