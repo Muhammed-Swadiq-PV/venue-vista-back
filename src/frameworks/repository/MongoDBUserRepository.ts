@@ -1,8 +1,7 @@
-// MongoDBUserRepository.ts
 import { UserRepository } from '../../entity/repository/userRepository';
 import { UserEntity } from '../../entity/models/UserEntity';
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcryptjs from 'bcryptjs';
 
 const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
   name: { type: String, required: true },
@@ -18,7 +17,7 @@ export class MongoDBUserRepository implements UserRepository {
   }
 
   async createUser(user: UserEntity): Promise<UserEntity> {
-    const hashedPassword = await bcrypt.hash(user.password, 10); // Hash password
+    const hashedPassword = await bcryptjs.hash(user.password, 10); // Hash password
     const newUser = new UserModel({
       name: user.name,
       email: user.email,
@@ -34,6 +33,6 @@ export class MongoDBUserRepository implements UserRepository {
     if (!user) {
       return false;
     }
-    return await bcrypt.compare(password, user.password);
+    return await bcryptjs.compare(password, user.password);
   }
 }

@@ -8,13 +8,12 @@ export class UserController {
     this.userUseCases = userUseCases;
   }
 
-
-  //signup
+  // Signup
   createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log('Recieved signup request:', req.body);
+      console.log('Received signup request:', req.body);
 
-      const { name, email, password,} = req.body;
+      const { name, email, password } = req.body;
       const user = await this.userUseCases.createUser({ name, email, password });
 
       console.log('User created successfully:', user);
@@ -30,13 +29,19 @@ export class UserController {
     }
   };
 
+  // Sign In
   signInUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      console.log('Received sign-in request:', req.body);
+
       const { email, password } = req.body;
-     
+
       const user = await this.userUseCases.signInUser(email, password);
+      console.log('User signed in successfully:', user);
+
       res.status(200).json(user);
     } catch (error: any) {
+      console.error('Error signing in user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid password') {
         res.status(400).json({ error: error.message });
       } else {
