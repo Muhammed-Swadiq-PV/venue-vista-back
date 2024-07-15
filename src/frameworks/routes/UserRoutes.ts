@@ -10,6 +10,7 @@ const userController = new UserController(userUseCases);
 const router: Router = Router();
 
 router.post('/signup', userController.createUser);
+router.post('/verify', userController.verifyUser);
 router.post('/signin', userController.signInUser);
 
 export default router;
