@@ -10,7 +10,11 @@ const userController = new UserController(userUseCases);
 const router: Router = Router();
 
 router.post('/signup', userController.createUser);
+router.post('/google-auth', userController.createGoogleUser)
+
+
 router.post('/verify', userController.verifyUser);
+router.post('/resend-otp' , userController.resendOtp)
 router.post('/signin', userController.signInUser);
 
 export default router;

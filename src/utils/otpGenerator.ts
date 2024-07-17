@@ -3,8 +3,9 @@ import dotenv from 'dotenv';
 
 // Function to generate a 6-digit OTP
 export const generateOTP = (): string => {
-  console.log('otp generated')
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = Math.floor(100000 + Math.random() * 900000).toString()
+  console.log('otp generated',otp)
+  return otp;
 };
 
 // Function to send an OTP email

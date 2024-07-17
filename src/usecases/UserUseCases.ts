@@ -1,5 +1,6 @@
 import { UserRepository } from '../entity/repository/userRepository';
 import { UserEntity } from '../entity/models/UserEntity';
+import axios from 'axios';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 
 export class UserUseCases {
@@ -10,6 +11,12 @@ export class UserUseCases {
   }
 
   async createUser(user: UserEntity): Promise<UserEntity> {
+
+    if (user.token) {
+      // User is signing up via Google OAuth
+      return this.createGoogleUser(user);
+    } 
+
     const existingUser = await this.userRepository.findUserByEmail(user.email);
     if (existingUser && existingUser.isVerified) {
       throw new Error('Email already exists');
@@ -19,7 +26,7 @@ export class UserUseCases {
       const otp = generateOTP();
       existingUser.otp = otp;
       await this.userRepository.updateUser(existingUser);
-      await sendOtpEmail(existingUser.name, existingUser.email, otp); // Send OTP email
+      await sendOtpEmail(existingUser.name, existingUser.email, otp); 
       throw new Error('User already exists but is not verified. OTP has been sent.');
     }
 
@@ -28,9 +35,33 @@ export class UserUseCases {
     user.isVerified = false;
 
     const newUser = await this.userRepository.createUser(user);
-    await sendOtpEmail(newUser.name, newUser.email, otp); // Send OTP email
+    await sendOtpEmail(newUser.name, newUser.email, otp); 
 
     return newUser;
+  }
+
+  async createGoogleUser(user: UserEntity): Promise<UserEntity> {
+   
+    return this.userRepository.createUserGoogle(user);
+  }
+  
+
+
+  async resendOtp(email: string): Promise<void> {
+    // console.log('inside user usecases resendotp' , email)
+    const user = await this.userRepository.findUserByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.isVerified) {
+      throw new Error('User is already verified');
+    }
+
+    const otp = generateOTP();
+    user.otp = otp;
+    await this.userRepository.updateUser(user);
+    await sendOtpEmail(user.name, user.email, otp); 
   }
 
   async verifyUser(email: string, otp: string): Promise<UserEntity> {

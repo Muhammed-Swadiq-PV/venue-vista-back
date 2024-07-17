@@ -22,13 +22,13 @@ mongoDB.connect()
 
 // Middleware to connect CORS
 app.use(cors({
-    origin:'http://localhost:5173',
+    origin:'http://localhost:5174',
 }));
 
 app.use(express.json());
 
 // Use routes
-app.use('/api/users', userRoutes);
+app.use('/users', userRoutes);
 app.use('/api/organizer', orgRoutes);
 
 // Root endpoint
@@ -40,7 +40,7 @@ app.get('/', (req, res) => {
 export const startServer = (port: number) => {
     console.log('starting server on port' , port)
     app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
+        console.log(`Server running on port http://localhost:${port}`);
     });
 };
 

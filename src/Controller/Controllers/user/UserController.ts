@@ -11,7 +11,7 @@ export class UserController {
   // Signup
   createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log('Received signup request:', req.body);
+      // console.log('Received signup request:', req.body);
 
       const { name, email, password } = req.body;
       const user = await this.userUseCases.createUser({ name, email, password });
@@ -27,6 +27,53 @@ export class UserController {
         res.status(400).json({ error: error.message });
       } else {
         res.status(500).json({ error: 'Failed to create user' });
+      }
+    }
+  };
+
+
+    createGoogleUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const { email, name } = req.body;
+        // console.log(email, name, 'request body google controller data')
+
+        if (!email || !name) {
+          throw new Error('Email or name not provided');
+        }
+
+        // Pass email and name to user use cases to create user
+        const user = await this.userUseCases.createGoogleUser({ email, name });
+        
+
+        console.log('User created successfully with Google:', user);
+
+        res.status(201).json({ message: 'Signed up successfully with Google!', user });
+      } catch (error: any) {
+        console.error('Google OAuth error:', error);
+        res.status(500).json({ error: 'Failed to sign up with Google. Please try again.' });
+      }
+    };
+
+  // Resend OTP
+  resendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      console.log(req.body)
+      console.log('entering inside resend otp')
+      const { email } = req.body;
+      console.log(email, 'usercontrollerile resend otp email')
+
+      if (!email || typeof email !== 'string') {
+        throw new Error('Invalid email');
+      }
+      await this.userUseCases.resendOtp(email);
+
+      res.status(200).json({ message: 'OTP resent to your email' });
+    } catch (error: any) {
+      console.error('Error resending OTP:', error.message);
+      if (error.message === 'User not found' || error.message === 'User is already verified') {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Failed to resend OTP' });
       }
     }
   };
