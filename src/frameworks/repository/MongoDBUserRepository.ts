@@ -34,7 +34,7 @@ async createUser(user: UserEntity): Promise<UserEntity> {
       name: user.name,
       email: user.email,
       password: hashedPassword,
-      isVerified: true, // Google users are considered verified
+      isVerified: true, 
       isGoogle: true,
     };
   } else {
@@ -54,13 +54,13 @@ async createUser(user: UserEntity): Promise<UserEntity> {
     };
   }
 
-  // Assuming you have a method to save newUser to your database
+  //save new user in database
   const savedUser = await this.saveUser(newUser);
 
   return savedUser;
 }
 
-// Example method to save user to the database
+//method for storing data in dbs
 async saveUser(user: UserEntity): Promise<UserEntity> {
   const userModel = new UserModel(user);
   const savedUser = await userModel.save();

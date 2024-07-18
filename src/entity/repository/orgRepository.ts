@@ -3,6 +3,7 @@ import { OrgEntity } from '../models/OrgEntity';
 
 export interface OrgRepository {
     createOrganizer(organizer: OrgEntity): Promise<OrgEntity>;
-    // findOrganizerByEmail(email: string): Promise<OrgEntity | null>;
-    // updateOrganizer(organizer: OrgEntity): Promise<OrgEntity>;
+    findOrganizerByEmail(email:string): Promise<OrgEntity| null> ;
+    validatePassword(email: string, password: string): Promise<boolean>;
+    updateOrganizer(organizer: OrgEntity): Promise<OrgEntity>;
 }

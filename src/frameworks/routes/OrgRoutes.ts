@@ -9,6 +9,8 @@ const orgRepository = new MongoDBOrgRepository();
 const orgUseCases = new OrgUseCases(orgRepository);
 const orgController = new OrgController(orgUseCases);
 
-router.post('/signup', orgController.registerOrganizer);
+router.post('/signup', orgController.createOrganizer);
+router.post('/verify' , orgController.verifyOrganizer)
+router.post('/google-auth', orgController.createGoogleOrganizer)
 
 export default router;
