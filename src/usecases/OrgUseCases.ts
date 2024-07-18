@@ -58,4 +58,36 @@ export class OrgUseCases {
     return this.orgRepository.createOrganizer(organizer);
   }
 
+  async signInOrganizer(email: string, password: string): Promise<OrgEntity| null> {
+    const organizer = await this.orgRepository.findOrganizerByEmail(email);
+    if (!organizer) {
+      throw new Error('Organizer not found');
+    }
+
+    if (!organizer.isVerified) {
+      throw new Error('Organizer not verified');
+    }
+
+    const isPasswordValid = await this.orgRepository.validatePassword(email, password);
+    if (!isPasswordValid) {
+      throw new Error('Invalid password');
+    }
+
+    return organizer;
+  }
+
+  async signInGoogle(email: string): Promise<OrgEntity | null> {
+    const organizer = await this.orgRepository.findOrganizerByEmail(email);
+    if (!organizer) {
+      throw new Error('Organizer not found');
+    }
+    if (!organizer.isVerified) {
+      throw new Error('Organizer not verified');
+    }
+    if (!organizer.isGoogle) {
+      throw new Error('Organizer not signed up with Google auth');
+    }
+    return organizer;
+  }
+
 }

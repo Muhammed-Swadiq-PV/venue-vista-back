@@ -78,4 +78,42 @@ export class OrgController {
         res.status(500).json({ error: 'Failed to sign up with Google. Please try again.' });
       }
     };
+
+    
+     // Sign In
+     signInOrganizer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // console.log('Received sign-in request:', req.body);
+
+      const { email, password } = req.body;
+
+      const user = await this.orgUseCases.signInOrganizer(email, password);
+      // console.log('User signed in successfully:', user);
+
+      res.status(200).json(user);
+    } catch (error: any) {
+      console.error('Error signing in user:', error.message);
+      if (error.message === 'Organizer not found' || error.message === 'Invalid password' || error.message === 'Organizer not verified') {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Failed to sign in' });
+      }
+    }
+  };
+
+  signInGoogle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email } = req.body;
+      console.log(email, "email in sign in google")
+      const organizer = await this.orgUseCases.signInGoogle(email);
+      res.status(200).json(organizer);
+    } catch (error: any) {
+      console.error('Error signing in organizer:', error.message);
+      if (error.message === 'Organizer not found' || error.message === 'Organizer not verified' || error.message === 'Organizer not signed up with Google auth') {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Failed to sign in' });
+      }
+    }
+  };
 }

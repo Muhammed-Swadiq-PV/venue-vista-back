@@ -10,7 +10,9 @@ const orgUseCases = new OrgUseCases(orgRepository);
 const orgController = new OrgController(orgUseCases);
 
 router.post('/signup', orgController.createOrganizer);
-router.post('/verify' , orgController.verifyOrganizer)
-router.post('/google-auth', orgController.createGoogleOrganizer)
+router.post('/verify' , orgController.verifyOrganizer);
+router.post('/google-auth', orgController.createGoogleOrganizer);
+router.post('/signin', orgController.signInOrganizer);
+router.post('/signin-google', orgController.signInGoogle);
 
 export default router;
