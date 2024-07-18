@@ -1,5 +1,5 @@
 import { UserRepository } from '../../entity/repository/userRepository';
-import { UserEntity ,UserGoogleEntity} from '../../entity/models/UserEntity';
+import { UserEntity } from '../../entity/models/UserEntity';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 
@@ -9,53 +9,65 @@ const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
   password: { type: String, required: true },
   otp: { type: String },
   isVerified: { type: Boolean, default: false },
+  isGoogle:{type:Boolean, default: false}
 });
 
-// const googleUserSchema: Schema<UserGoogleEntity & Document> = new mongoose.Schema({
-//   name: { type: String, required: true },
-//   email: { type: String, required: true, unique: true },
-// });
 
 const UserModel: Model<UserEntity & Document> = mongoose.model('User', userSchema);
-// const GoogleUserModel: Model<UserGoogleEntity & Document> = mongoose.model('GoogleUser', googleUserSchema);
+
 
 export class MongoDBUserRepository implements UserRepository {
-  async createUser(user: UserEntity): Promise<UserEntity> {
+
+
+
+async createUser(user: UserEntity): Promise<UserEntity> {
+  let newUser: UserEntity;
+
+  if (user.isGoogle) {
+    if (!user.password) {
+      throw new Error('Password is required for Google authenticated users');
+    }
+
+    const hashedPassword = await bcryptjs.hash(user.password, 10);
+
+    newUser = {
+      name: user.name,
+      email: user.email,
+      password: hashedPassword,
+      isVerified: true, // Google users are considered verified
+      isGoogle: true,
+    };
+  } else {
     if (!user.password) {
       throw new Error('Password is required');
     }
 
     const hashedPassword = await bcryptjs.hash(user.password, 10);
-    const newUser = new UserModel({
+
+    newUser = {
       name: user.name,
       email: user.email,
       password: hashedPassword,
       otp: user.otp,
-      isVerified: user.isVerified,
-    });
-
-    await newUser.save();
-    return newUser.toObject();
+      isVerified: user.isVerified || false,
+      isGoogle: user.isGoogle || false,
+    };
   }
 
-  // async createUserGoogle(user: UserEntity): Promise<UserEntity> {
-  //   let existingUser = await UserModel.findOne({ email: user.email });
+  // Assuming you have a method to save newUser to your database
+  const savedUser = await this.saveUser(newUser);
 
-  //   if (existingUser) {
-  //     existingUser.name = user.name;
-  //     return existingUser.save();
-  //   } else {
-  //     const newUser = new UserModel({
-  //       name: user.name,
-  //       email: user.email,
-  //     });
+  return savedUser;
+}
 
-  //     await newUser.save();
-  //     return newUser.toObject();
-  //   }
-  // }
+// Example method to save user to the database
+async saveUser(user: UserEntity): Promise<UserEntity> {
+  const userModel = new UserModel(user);
+  const savedUser = await userModel.save();
+  return savedUser.toObject();
+}
 
-  
+
 
   async findUserByEmail(email: string): Promise<UserEntity | null> {
     return await UserModel.findOne({ email }).exec();

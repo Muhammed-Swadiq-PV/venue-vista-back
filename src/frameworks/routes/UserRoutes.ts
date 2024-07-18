@@ -16,5 +16,6 @@ router.post('/google-auth', userController.createGoogleUser)
 router.post('/verify', userController.verifyUser);
 router.post('/resend-otp' , userController.resendOtp)
 router.post('/signin', userController.signInUser);
+router.post('/signin-google', userController.signInGoogle)
 
 export default router;

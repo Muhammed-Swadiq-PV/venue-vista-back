@@ -29,6 +29,7 @@ export class UserUseCases {
     const otp = generateOTP();
     user.otp = otp;
     user.isVerified = false;
+    user.isGoogle = false;
 
     const newUser = await this.userRepository.createUser(user);
     await sendOtpEmail(newUser.name, newUser.email, otp); 
@@ -37,7 +38,9 @@ export class UserUseCases {
   }
 
   async createGoogleUser(user: UserEntity): Promise<UserEntity> {
-   
+    user.isVerified = true;
+    user.isGoogle = true;
+    // console.log(user.isGoogle, 'user.isgoogle status in user case')
     return this.userRepository.createUser(user);
   }
   
@@ -93,4 +96,19 @@ export class UserUseCases {
 
     return user;
   }
+
+  async signInGoogle(email: string): Promise<UserEntity | null> {
+    const user = await this.userRepository.findUserByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (!user.isVerified) {
+      throw new Error('User not verified');
+    }
+    if (!user.isGoogle) {
+      throw new Error('User not signed up with Google auth');
+    }
+    return user;
+  }
+  
 }

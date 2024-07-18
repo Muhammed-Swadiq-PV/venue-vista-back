@@ -29,7 +29,7 @@ app.use(express.json());
 
 // Use routes
 app.use('/users', userRoutes);
-app.use('/api/organizer', orgRoutes);
+app.use('/organizer', orgRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

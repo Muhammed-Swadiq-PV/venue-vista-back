@@ -8,10 +8,3 @@ export interface UserEntity {
     token?: string;
     isGoogle?: boolean;
   }
-
-  export interface UserGoogleEntity {
-    id ?: String;
-    name: string;
-    email: string;
-  }
-  
