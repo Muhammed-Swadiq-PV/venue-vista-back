@@ -6,6 +6,7 @@ export interface UserEntity {
     otp?: String;
     isVerified?: boolean;
     token?: string;
+    isGoogle?: boolean;
   }
 
   export interface UserGoogleEntity {

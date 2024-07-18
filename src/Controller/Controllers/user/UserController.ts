@@ -32,27 +32,33 @@ export class UserController {
   };
 
 
-    createGoogleUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-        const { email, name } = req.body;
-        // console.log(email, name, 'request body google controller data')
+  createGoogleUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, name } = req.body;
+      console.log(email, name, 'request body google controller data');
 
-        if (!email || !name) {
-          throw new Error('Email or name not provided');
-        }
-
-        // Pass email and name to user use cases to create user
-        const user = await this.userUseCases.createGoogleUser({ email, name });
-        
-
-        console.log('User created successfully with Google:', user);
-
-        res.status(201).json({ message: 'Signed up successfully with Google!', user });
-      } catch (error: any) {
-        console.error('Google OAuth error:', error);
-        res.status(500).json({ error: 'Failed to sign up with Google. Please try again.' });
+      if (!email || !name) {
+        throw new Error('Email or name not provided');
       }
-    };
+
+      // Fetch password from environment variables
+      const password = process.env.GOOGLE_CLIENT_PASSWORD;
+
+      if (!password) {
+        throw new Error('Google client password not set');
+      }
+
+      // Pass email, name, and password to user use cases to create user
+      const user = await this.userUseCases.createGoogleUser({ email, name, password });
+
+      console.log('User created successfully with Google:', user);
+
+      res.status(201).json({ message: 'Signed up successfully with Google!', user });
+    } catch (error: any) {
+      console.error('Google OAuth error:', error);
+      res.status(500).json({ error: 'Failed to sign up with Google. Please try again.' });
+    }
+  };
 
   // Resend OTP
   resendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

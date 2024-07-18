@@ -1,5 +1,5 @@
 import { UserRepository } from '../../entity/repository/userRepository';
-import { UserEntity, UserGoogleEntity } from '../../entity/models/UserEntity';
+import { UserEntity ,UserGoogleEntity} from '../../entity/models/UserEntity';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 
@@ -11,13 +11,13 @@ const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
 });
 
-const googleUserSchema: Schema<UserGoogleEntity & Document> = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-});
+// const googleUserSchema: Schema<UserGoogleEntity & Document> = new mongoose.Schema({
+//   name: { type: String, required: true },
+//   email: { type: String, required: true, unique: true },
+// });
 
 const UserModel: Model<UserEntity & Document> = mongoose.model('User', userSchema);
-const GoogleUserModel: Model<UserGoogleEntity & Document> = mongoose.model('GoogleUser', googleUserSchema);
+// const GoogleUserModel: Model<UserGoogleEntity & Document> = mongoose.model('GoogleUser', googleUserSchema);
 
 export class MongoDBUserRepository implements UserRepository {
   async createUser(user: UserEntity): Promise<UserEntity> {
@@ -38,22 +38,24 @@ export class MongoDBUserRepository implements UserRepository {
     return newUser.toObject();
   }
 
-  async createUserGoogle(user: UserGoogleEntity): Promise<UserGoogleEntity> {
-    let existingUser = await GoogleUserModel.findOne({ email: user.email });
+  // async createUserGoogle(user: UserEntity): Promise<UserEntity> {
+  //   let existingUser = await UserModel.findOne({ email: user.email });
 
-    if (existingUser) {
-      existingUser.name = user.name;
-      return existingUser.save();
-    } else {
-      const newUser = new GoogleUserModel({
-        name: user.name,
-        email: user.email,
-      });
+  //   if (existingUser) {
+  //     existingUser.name = user.name;
+  //     return existingUser.save();
+  //   } else {
+  //     const newUser = new UserModel({
+  //       name: user.name,
+  //       email: user.email,
+  //     });
 
-      await newUser.save();
-      return newUser.toObject();
-    }
-  }
+  //     await newUser.save();
+  //     return newUser.toObject();
+  //   }
+  // }
+
+  
 
   async findUserByEmail(email: string): Promise<UserEntity | null> {
     return await UserModel.findOne({ email }).exec();

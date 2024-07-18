@@ -12,10 +12,6 @@ export class UserUseCases {
 
   async createUser(user: UserEntity): Promise<UserEntity> {
 
-    if (user.token) {
-      // User is signing up via Google OAuth
-      return this.createGoogleUser(user);
-    } 
 
     const existingUser = await this.userRepository.findUserByEmail(user.email);
     if (existingUser && existingUser.isVerified) {
@@ -42,7 +38,7 @@ export class UserUseCases {
 
   async createGoogleUser(user: UserEntity): Promise<UserEntity> {
    
-    return this.userRepository.createUserGoogle(user);
+    return this.userRepository.createUser(user);
   }
   
 
