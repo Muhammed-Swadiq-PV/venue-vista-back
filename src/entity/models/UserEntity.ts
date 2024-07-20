@@ -7,4 +7,5 @@ export interface UserEntity {
     isVerified?: boolean;
     token?: string;
     isGoogle?: boolean;
+    isBlocked?: boolean;
   }

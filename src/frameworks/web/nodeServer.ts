@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
 import MongoDB from '../db/MongoDB';
 import userRoutes from '../routes/UserRoutes';
 import orgRoutes from '../routes/OrgRoutes';
@@ -8,6 +9,7 @@ import orgRoutes from '../routes/OrgRoutes';
 dotenv.config();
 
 const app = express();
+
 
 // Initialize MongoDB connection
 const mongoDB = new MongoDB();
@@ -32,9 +34,9 @@ app.use('/users', userRoutes);
 app.use('/organizer', orgRoutes);
 
 // Root endpoint
-app.get('/', (req, res) => {
-    res.send('hello world');
-});
+// app.get('/', (req, res) => {
+//     res.send('hello world');
+// });
 
 // Start server function
 export const startServer = (port: number) => {
