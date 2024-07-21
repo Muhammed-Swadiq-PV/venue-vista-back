@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { OrgUseCases } from '../../../usecases/OrgUseCases';
 import { OrgEntity } from '../../../entity/models/OrgEntity';
-import { CustomRequest } from '../../types/orgProfille';
+import { CustomRequestWithJwt } from '../../../interfaces/CustomRequestWithJwt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -173,11 +173,14 @@ export class OrgController {
     }
   };
 
-  createProfile = async(req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+  createProfile = async(req: CustomRequestWithJwt, res: Response, next: NextFunction): Promise<void> => {
     console.log(req.body, 'data from create organizer profile');
     
     // Type assertion to handle potential undefined value for images that passed from frontend for the ownerid and licence
     const files = req.files ;
+    const userId = req.user?.id;
+
+    console.log(userId, 'userid in jwt controller')
     
     if (files) {
       // console.log('Files:', files); // Logs the uploaded files
