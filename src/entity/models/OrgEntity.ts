@@ -13,7 +13,7 @@ export interface OrgEntity {
     city?: string;
     buildingfloor?: string;
     pincode?: string;
-    ownerIdCard?: Buffer;
-    eventHallLicense?: Buffer;
+    ownerIdCard?: any;
+    eventHallLicense?: any;
     isProfileVerified?: boolean;
 }

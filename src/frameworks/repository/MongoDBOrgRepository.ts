@@ -17,8 +17,8 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
   city: { type: String },
   buildingfloor: { type: String },
   pincode: { type: String },
-  ownerIdCard: { type: Buffer },
-  eventHallLicense: { type: Buffer },
+  ownerIdCard: { type: Schema.Types.Mixed },
+  eventHallLicense: { type: Schema.Types.Mixed },
   isProfileVerified: { type: Boolean, default: false }
 });
 
@@ -82,8 +82,16 @@ export class MongoDBOrgRepository implements OrgRepository {
   }
 
   async updateProfile(id: string, profileData: Partial<OrgEntity>): Promise<void> {
-    console.log(id, profileData, 'inside mongodborg repository when updating profile');
-    await OrgModel.findByIdAndUpdate(id, profileData, { new: true }).exec();
+    try{
+      // console.log(id, profileData, 'inside mongodborg repository when updating profile');
+      const result = await OrgModel.findByIdAndUpdate(id, profileData, { new: true }).exec();
+      if (!result) {
+        throw new Error('Document not found or not updated');
+    }
+    // console.log('Update successful:', result);
+    } catch(error: any){
+      console.error('Update failed:', error);
+    }
   }
 
   async validatePassword(email: string, password: string): Promise<boolean> {
