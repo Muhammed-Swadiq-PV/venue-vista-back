@@ -7,7 +7,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret';
 
 export interface CustomJwtRequest extends Request {
-  user?: { id: string; [key: string]: any }; // Adjust the user object as needed
+  user?: { id: string; [key: string]: any }; 
 }
 
 export const authenticateJWT = (req: CustomJwtRequest, res: Response, next: NextFunction): void => {

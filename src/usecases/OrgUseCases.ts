@@ -90,4 +90,18 @@ export class OrgUseCases {
     return organizer;
   }
 
+  async updateProfile( id: string, profileData: any): Promise<void> {
+    const organizer = await this.orgRepository.findOrganizerById(id);
+    if (!organizer) {
+      throw new Error('Organizer not found');
+    }
+    if (organizer.isBlocked) {
+      throw new Error('Organizer is blocked');
+    }
+  
+    // Update the organizer profile with the new data
+    await this.orgRepository.updateProfile(id, profileData);
+    
+  }
+
 }

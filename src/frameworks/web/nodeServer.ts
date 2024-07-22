@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import MongoDB from '../db/MongoDB';
 import userRoutes from '../routes/UserRoutes';
 import orgRoutes from '../routes/OrgRoutes';
+import adminRoutes from '../routes/adminRoutes';
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use(express.json());
 // Use routes
 app.use('/users', userRoutes);
 app.use('/organizer', orgRoutes);
+app.use('/admin', adminRoutes);
 
 // Root endpoint
 // app.get('/', (req, res) => {

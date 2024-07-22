@@ -174,24 +174,40 @@ export class OrgController {
   };
 
   createProfile = async(req: CustomRequestWithJwt, res: Response, next: NextFunction): Promise<void> => {
-    console.log(req.body, 'data from create organizer profile');
+
+    try{
     
     // Type assertion to handle potential undefined value for images that passed from frontend for the ownerid and licence
+    //for that I added it in types folder passing throuth interfaces with jwt and here customRequestWithJwt
     const files = req.files ;
     const userId = req.user?.id;
-
-    console.log(userId, 'userid in jwt controller')
     
-    if (files) {
-      // console.log('Files:', files); // Logs the uploaded files
+    if (files && userId) {
 
+      
       const ownerIdCard = files['ownerIdCard'] ? files['ownerIdCard'][0] : null;
-      const eventHallLicense = files['eventHallLicense'] ? files['eventHallLicense'][0] : null;
+      const eventHallLicense = files['eventHallLicense'] ? files['eventHallLicense'][0]: null;
+        console.log(ownerIdCard, eventHallLicense, 'owner idcard and event hall license in controller')
 
-      console.log('Owner ID Card:', ownerIdCard);
-      console.log('Event Hall License:', eventHallLicense);
+      const profileData: Partial<OrgEntity> = {
+        eventHallName: req.body.eventHallName,
+        phoneNumber: req.body.phoneNumber,
+        district: req.body.district,
+        city: req.body.city,
+        buildingfloor: req.body.buildingFloor,
+        pincode: req.body.pincode,
+        ownerIdCard,
+        eventHallLicense,
+        isProfileVerified: false
+      };
+
+      await this.orgUseCases.updateProfile(userId, profileData);
+        res.status(200).json({ message: 'Profile created successfully' });
     } else {
-      console.log('No files uploaded');
+      res.status(400).json({ error: 'Files or user ID missing' });
     }
+  }catch (error: any) {
+    res.status(500).json({ error: 'Failed to create profile' });
   }
+}
 }

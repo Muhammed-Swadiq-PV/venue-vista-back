@@ -3,10 +3,9 @@ import { OrgController } from '../../Controller/Controllers/organizer/OrgControl
 import { OrgUseCases } from '../../usecases/OrgUseCases';
 import { MongoDBOrgRepository } from '../../frameworks/repository/MongoDBOrgRepository';
 import { authenticateJWT } from '../middleware/orgJWTmiddle';
-import multer from 'multer';
+import { upload } from '../middleware/upload';
 
 const router = Router();
-const upload = multer(); //multer for image upload by the user||organizer||admin
 
 const orgRepository = new MongoDBOrgRepository();
 const orgUseCases = new OrgUseCases(orgRepository);

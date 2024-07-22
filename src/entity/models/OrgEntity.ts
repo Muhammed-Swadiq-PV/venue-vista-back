@@ -1,23 +1,19 @@
-
 export interface OrgEntity {
-    id ?: String;
+    id ?: string;
     name: string;
     email: string;
     password?: string;
-    otp?: String;
+    otp?: string;
     isVerified?: boolean;
-    token?: string;
     isGoogle?: boolean;
     isBlocked?: boolean;
-    profile?:{
-        eventHallName?: string;
-        phoneNumber?: string;
-        district?:string;
-        city?: string;
-        buildingfloor?: string;
-        pincode?: string;
-        ownerIdCard?: Buffer;
-        eventHallLicense?: Buffer;
-        isApproved?: boolean;
-    }
+    eventHallName?: string;
+    phoneNumber?: string;
+    district?: string;
+    city?: string;
+    buildingfloor?: string;
+    pincode?: string;
+    ownerIdCard?: Buffer;
+    eventHallLicense?: Buffer;
+    isProfileVerified?: boolean;
 }

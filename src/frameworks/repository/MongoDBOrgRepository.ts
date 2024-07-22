@@ -9,8 +9,19 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
   password: { type: String, required: true },
   otp: { type: String },
   isVerified: { type: Boolean, default: false },
-  isGoogle: { type: Boolean, default: false }
+  isGoogle: { type: Boolean, default: false },
+  isBlocked: { type: Boolean, default: false },
+  eventHallName: { type: String },
+  phoneNumber: { type: String },
+  district: { type: String },
+  city: { type: String },
+  buildingfloor: { type: String },
+  pincode: { type: String },
+  ownerIdCard: { type: Buffer },
+  eventHallLicense: { type: Buffer },
+  isProfileVerified: { type: Boolean, default: false }
 });
+
 
 const OrgModel: Model<OrgEntity & Document> = mongoose.model('Organizer', organizerSchema);
 
@@ -59,8 +70,20 @@ export class MongoDBOrgRepository implements OrgRepository {
     return savedOrganizer.toObject();
   }
 
+
+
+
   async findOrganizerByEmail(email: string): Promise<OrgEntity | null> {
     return await OrgModel.findOne({ email }).exec();
+  }
+
+  async findOrganizerById(id: string): Promise<OrgEntity | null> {
+    return await OrgModel.findById(id).exec();
+  }
+
+  async updateProfile(id: string, profileData: Partial<OrgEntity>): Promise<void> {
+    console.log(id, profileData, 'inside mongodborg repository when updating profile');
+    await OrgModel.findByIdAndUpdate(id, profileData, { new: true }).exec();
   }
 
   async validatePassword(email: string, password: string): Promise<boolean> {
