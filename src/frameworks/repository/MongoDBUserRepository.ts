@@ -2,6 +2,7 @@ import { UserRepository } from '../../entity/repository/userRepository';
 import { UserEntity } from '../../entity/models/UserEntity';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
+import { ObjectId } from 'mongodb';
 
 const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
   name: { type: String, required: true },
@@ -110,5 +111,20 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
       console.error('Error fetching users:', error);
       throw new Error('Failed to fetch users');
     }
+  }
+
+  async manageUsers(id: string, updateData: Partial<UserEntity>): Promise <UserEntity | null> {
+    try {
+      const userId = new ObjectId(id);
+      const result = await UserModel.findOneAndUpdate(
+          { _id: userId },
+          { $set: updateData },
+          { new: true } 
+      ).exec();
+      return result ? result.toObject() : null;
+  } catch (error) {
+      console.error('Error updating user:', error);
+      throw new Error('Failed to update user');
+  }
   }
 }

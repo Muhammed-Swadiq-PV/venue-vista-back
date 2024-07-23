@@ -41,4 +41,18 @@ export class AdmUseCases {
             throw new Error('Failed to fetch users');
         }
     }
+
+    // Block or unblock a user
+    async blockUser(id: string, isBlocked: boolean): Promise<UserEntity | null> {
+        try {
+            const updatedUser = await this.userRepository.manageUsers(id, { isBlocked: !isBlocked });
+            if (!updatedUser) {
+                throw new Error('User not found');
+            }
+            return updatedUser;
+        } catch (error) {
+            console.error('Error in blockUser use case:', error);
+            throw new Error('Failed to update user status');
+        }
+    }
 }

@@ -51,4 +51,24 @@ export class AdmController {
             res.status(500).json({ error: 'Failed to fetch users' });
         }
     }
+
+    async blockUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            // console.log( 'is that blocked')
+          const { id } = req.params;
+          const { isBlocked } = req.body;
+    
+          // Assuming admUseCases has a method to toggle user block status
+          const updatedUser = await this.admUseCases.blockUser(id, isBlocked);
+    
+          if (updatedUser) {
+            res.status(200).json(updatedUser);
+          } else {
+            res.status(404).json({ error: 'User not found' });
+          }
+        } catch (error: any) {
+          console.error('Error updating user status:', error.message);
+          res.status(500).json({ error: 'Failed to update user status' });
+        }
+      }
 }

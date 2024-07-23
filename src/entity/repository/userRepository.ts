@@ -6,4 +6,5 @@ export interface UserRepository {
   validatePassword(email: string, password: string): Promise<boolean>;
   updateUser(user: UserEntity): Promise<UserEntity>;
   getAllUsers(): Promise<UserEntity[]>;
+  manageUsers(id: string, updateData: Partial<UserEntity>): Promise<UserEntity | null>;
 }
