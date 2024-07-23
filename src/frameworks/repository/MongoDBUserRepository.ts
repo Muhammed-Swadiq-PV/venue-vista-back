@@ -100,4 +100,15 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
 
     return updatedUser.toObject();
   }
+
+  async getAllUsers(): Promise<UserEntity[]> {
+    try {
+      // console.log('request coming inside userRepository');
+      const users = await UserModel.find().exec();
+      return users.map(user => user.toObject());
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw new Error('Failed to fetch users');
+    }
+  }
 }

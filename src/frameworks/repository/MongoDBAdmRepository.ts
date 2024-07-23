@@ -14,9 +14,6 @@ const AdmModel: Model<AdmDocument> = mongoose.model<AdmDocument>('Admin', AdmSch
 
 export class MongoDBAdmRepository implements admRepository {
     async findAdminByEmail(email: string): Promise<AdmEntity | null> {
-        // console.log(email, 'email in repository','type', typeof email)
-        // const admnd= await AdmModel.find()
-        // console.log('admnsssss in repository',admnd)
 
         const admin = await AdmModel.findOne({ email }).exec();
         // console.log(admin, 'admin found in repository');

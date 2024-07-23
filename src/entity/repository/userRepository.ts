@@ -5,4 +5,5 @@ export interface UserRepository {
   findUserByEmail(email: string): Promise<UserEntity | null>;
   validatePassword(email: string, password: string): Promise<boolean>;
   updateUser(user: UserEntity): Promise<UserEntity>;
+  getAllUsers(): Promise<UserEntity[]>;
 }
