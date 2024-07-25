@@ -81,6 +81,20 @@ export class MongoDBOrgRepository implements OrgRepository {
     return await OrgModel.findById(id).exec();
   }
 
+  async updateOrganizerByEmail(email: string, profileData: Partial<OrgEntity>): Promise<OrgEntity | null> {
+    try {
+      const result = await OrgModel.findOneAndUpdate({ email }, profileData, { new: true }).exec();
+      if (!result) {
+        throw new Error('Document not found or not updated');
+      }
+      return result as OrgEntity;
+    } catch (error: any) {
+      console.error('Update failed:', error.message);
+      throw new Error('Failed to update organizer');
+    }
+  
+  }
+
   async updateProfile(id: string, profileData: Partial<OrgEntity>): Promise<void> {
     try{
       // console.log(id, profileData, 'inside mongodborg repository when updating profile');

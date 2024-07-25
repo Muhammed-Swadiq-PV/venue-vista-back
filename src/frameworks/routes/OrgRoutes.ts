@@ -16,10 +16,8 @@ router.post('/google-auth', orgController.createGoogleOrganizer); //signup throu
 router.post('/signin', orgController.signInOrganizer); //signin through email and password
 router.post('/signin-google', orgController.signInGoogle); // signin through google OAuth 
 router.post('/create-profile', authenticateJWT, (req, res, next) => {
-    console.log('Before calling controller');
     orgController.createProfile(req, res);
-    console.log('After calling controller'); //for updating profile also checking middleware
-  });
+  });//for updating profile also checking middleware
 
 
 export default router;

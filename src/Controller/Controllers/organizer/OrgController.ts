@@ -75,7 +75,7 @@ export class OrgController {
     createGoogleOrganizer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { email, name } = req.body;
-        console.log(email, name, 'request body google controller data');
+        // console.log(email, name, 'request body google controller data');
   
         if (!email || !name) {
           throw new Error('Email or name not provided');
@@ -98,6 +98,7 @@ export class OrgController {
           JWT_SECRET,
           { expiresIn: '1h' } // Token expires in 1 hour
         );
+        console.log(token, 'when google auth sign up')
   
         res.status(201).json({ message: 'Signed up successfully with Google!', organizer , token});
       } catch (error: any) {
@@ -176,18 +177,14 @@ export class OrgController {
 
 async createProfile(req: CustomRequestWithJwt, res: Response): Promise<void> {
   try {
-    // Ensure organizer is present in request through jwt
-    console.log('inside cntrlr createprofile')
-    console.log('req.user:', req.user);
-    console.log('req.body:', req.body);
-    console.log(req.headers, ': =>req.headers')
+    // console.log('req.user:', req.user);
     if (!req.user || !req.user.id) {
       res.status(401).json({ error: 'Unauthorized' });
       return ;
     }
 
     const userId = req.user.id;
-    console.log(userId, 'userid in controller')
+    // console.log(userId, 'userid in controller')
     // console.log(req.body, 'co==req.body')
 
     const {
@@ -212,7 +209,7 @@ async createProfile(req: CustomRequestWithJwt, res: Response): Promise<void> {
       eventHallLicenseUrl
     }
 
-    console.log(organizerData, 'organizer data')
+    // console.log(organizerData, 'organizer data')
 
     // Pass userId and profile data to the use case
     const updatedOrganizer = await this.orgUseCases.updateProfile(userId, organizerData);

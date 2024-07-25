@@ -48,7 +48,16 @@ export class OrgUseCases {
     organizer.isVerified = true;
     organizer.otp = undefined; // Clear OTP after successful verification
 
-    return this.orgRepository.updateOrganizer(organizer);
+    const updatedOrganizer = await this.orgRepository.updateOrganizerByEmail(email, {
+      isVerified: organizer.isVerified,
+      otp: organizer.otp
+    });
+  
+    if (!updatedOrganizer) {
+      throw new Error('Failed to update organizer');
+    }
+  
+    return updatedOrganizer;
   }
 
   async createGoogleOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
