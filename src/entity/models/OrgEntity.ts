@@ -11,9 +11,9 @@ export interface OrgEntity {
     phoneNumber?: string;
     district?: string;
     city?: string;
-    buildingfloor?: string;
+    buildingFloor?: string;
     pincode?: string;
-    ownerIdCard?: any;
-    eventHallLicense?: any;
+    ownerIdCardUrl?: string;
+    eventHallLicenseUrl?: string;
     isProfileVerified?: boolean;
 }

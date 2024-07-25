@@ -12,11 +12,12 @@ export interface CustomJwtRequest extends Request {
 
 export const authenticateJWT = (req: CustomJwtRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
-
+  // console.log(req.body, 'req.body in jwt')
+  // console.log('Authorization header:', authHeader);
   if (authHeader) {
     const token = authHeader.split(' ')[1];
-    console.log(token, 'token in jwt')
-    console.log(JWT_SECRET, 'to compare')
+    // console.log(token, 'token in jwt src/frameworks/middleware/orgJWTmiddle.ts')
+    // console.log(JWT_SECRET, 'to compare src/frameworks/middleware/orgJWTmiddle.ts')
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
       if (err) {

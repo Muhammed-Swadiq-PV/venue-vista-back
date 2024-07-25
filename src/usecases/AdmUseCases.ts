@@ -45,7 +45,7 @@ export class AdmUseCases {
     // Block or unblock a user
     async blockUser(id: string, isBlocked: boolean): Promise<UserEntity | null> {
         try {
-            const updatedUser = await this.userRepository.manageUsers(id, { isBlocked: !isBlocked });
+            const updatedUser = await this.userRepository.manageUsers(id, { isBlocked });
             if (!updatedUser) {
                 throw new Error('User not found');
             }

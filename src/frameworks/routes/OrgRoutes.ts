@@ -3,7 +3,6 @@ import { OrgController } from '../../Controller/Controllers/organizer/OrgControl
 import { OrgUseCases } from '../../usecases/OrgUseCases';
 import { MongoDBOrgRepository } from '../../frameworks/repository/MongoDBOrgRepository';
 import { authenticateJWT } from '../middleware/orgJWTmiddle';
-import { upload } from '../middleware/upload';
 
 const router = Router();
 
@@ -16,8 +15,11 @@ router.post('/verify' , orgController.verifyOrganizer); //otp verification
 router.post('/google-auth', orgController.createGoogleOrganizer); //signup through google OAuth
 router.post('/signin', orgController.signInOrganizer); //signin through email and password
 router.post('/signin-google', orgController.signInGoogle); // signin through google OAuth 
-router.post('/create-profile', authenticateJWT, upload.fields([
-    { name: 'ownerIdCard', maxCount: 1 },
-    { name: 'eventHallLicense', maxCount: 1 }
-]), orgController.createProfile); // create profile when signup
+router.post('/create-profile', authenticateJWT, (req, res, next) => {
+    console.log('Before calling controller');
+    orgController.createProfile(req, res);
+    console.log('After calling controller'); //for updating profile also checking middleware
+  });
+
+
 export default router;

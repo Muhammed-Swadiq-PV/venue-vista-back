@@ -37,10 +37,7 @@ app.use('/users', userRoutes);
 app.use('/organizer', orgRoutes);
 app.use('/admin', adminRoutes);
 
-// Root endpoint
-// app.get('/', (req, res) => {
-//     res.send('hello world');
-// });
+
 
 // Start server function
 export const startServer = (port: number) => {

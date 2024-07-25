@@ -15,10 +15,10 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
   phoneNumber: { type: String },
   district: { type: String },
   city: { type: String },
-  buildingfloor: { type: String },
+  buildingFloor: { type: String },
   pincode: { type: String },
-  ownerIdCard: { type: Schema.Types.Mixed },
-  eventHallLicense: { type: Schema.Types.Mixed },
+  ownerIdCardUrl: { type: Schema.Types.Mixed },
+  eventHallLicenseUrl: { type: Schema.Types.Mixed },
   isProfileVerified: { type: Boolean, default: false }
 });
 
@@ -102,23 +102,47 @@ export class MongoDBOrgRepository implements OrgRepository {
     return await bcryptjs.compare(password, organizer.password);
   }
 
-  async updateOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
-    const updatedOrganizer = await OrgModel.findOneAndUpdate(
-      { email: organizer.email },
-      {
-        name: organizer.name,
-        email: organizer.email,
-        password: organizer.password,
-        otp: organizer.otp,
-        isVerified: organizer.isVerified,
-      },
-      { new: true }
-    ).exec();
+  async updateOrganizer(organizer: Partial<OrgEntity> & { _doc?: any }): Promise<OrgEntity> {
+    try {
+      console.log('Updating organizer:', JSON.stringify(organizer, null, 2));
+  
+      // Extract the _id from _doc if it exists, otherwise use the id property
+      const organizerId = organizer._doc?._id || organizer.id;
+  
+      if (!organizerId) {
+        throw new Error('Organizer ID is missing');
+      }
+  
+      // Create an update object with only the new fields
+      const updateFields = {
+        eventHallName: organizer.eventHallName,
+        phoneNumber: organizer.phoneNumber,
+        district: organizer.district,
+        city: organizer.city,
+        buildingFloor: organizer.buildingFloor,
+        pincode: organizer.pincode,
+        ownerIdCardUrl: organizer.ownerIdCardUrl,
+        eventHallLicenseUrl: organizer.eventHallLicenseUrl
+      };
 
-    if (!updatedOrganizer) {
-      throw new Error('User not found');
+      // console.log(updateFields, 'updatefields in mongodborgrepository')
+  
+      // Use findOneAndUpdate to update the document
+      const result = await OrgModel.findOneAndUpdate(
+        { _id: organizerId },
+        { $set: updateFields },
+        { new: true, runValidators: true }
+      ).exec();
+  
+      if (!result) {
+        throw new Error('Profile not found or not updated');
+      }
+  
+      // console.log('Updated organizer:', JSON.stringify(result.toObject(), null, 2));
+      return result.toObject();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
     }
-
-    return updatedOrganizer.toObject();
   }
 }

@@ -173,41 +173,53 @@ export class OrgController {
     }
   };
 
-  createProfile = async(req: CustomRequestWithJwt, res: Response, next: NextFunction): Promise<void> => {
 
-    try{
-    
-    // Type assertion to handle potential undefined value for images that passed from frontend for the ownerid and licence
-    //for that I added it in types folder passing throuth interfaces with jwt and here customRequestWithJwt
-    const files = req.files ;
-    const userId = req.user?.id;
-    
-    if (files && userId) {
-
-      
-      const ownerIdCard = files['ownerIdCard'] ? files['ownerIdCard'][0] : null;
-      const eventHallLicense = files['eventHallLicense'] ? files['eventHallLicense'][0]: null;
-        console.log(ownerIdCard, eventHallLicense, 'owner idcard and event hall license in controller')
-
-      const profileData: Partial<OrgEntity> = {
-        eventHallName: req.body.eventHallName,
-        phoneNumber: req.body.phoneNumber,
-        district: req.body.district,
-        city: req.body.city,
-        buildingfloor: req.body.buildingFloor,
-        pincode: req.body.pincode,
-        ownerIdCard,
-        eventHallLicense,
-        isProfileVerified: false
-      };
-
-      await this.orgUseCases.updateProfile(userId, profileData);
-        res.status(200).json({ message: 'Profile created successfully' });
-    } else {
-      res.status(400).json({ error: 'Files or user ID missing' });
+async createProfile(req: CustomRequestWithJwt, res: Response): Promise<void> {
+  try {
+    // Ensure organizer is present in request through jwt
+    console.log('inside cntrlr createprofile')
+    console.log('req.user:', req.user);
+    console.log('req.body:', req.body);
+    console.log(req.headers, ': =>req.headers')
+    if (!req.user || !req.user.id) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return ;
     }
-  }catch (error: any) {
-    res.status(500).json({ error: 'Failed to create profile' });
+
+    const userId = req.user.id;
+    console.log(userId, 'userid in controller')
+    // console.log(req.body, 'co==req.body')
+
+    const {
+      eventHallName,
+      phoneNumber,
+      district,
+      city,
+      buildingFloor,
+      pincode,
+      ownerIdCardUrl,
+      eventHallLicenseUrl
+    } = req.body;
+
+    const organizerData = {
+      eventHallName,
+      phoneNumber,
+      district,
+      city,
+      buildingFloor,
+      pincode,
+      ownerIdCardUrl,
+      eventHallLicenseUrl
+    }
+
+    console.log(organizerData, 'organizer data')
+
+    // Pass userId and profile data to the use case
+    const updatedOrganizer = await this.orgUseCases.updateProfile(userId, organizerData);
+    res.status(201).json(updatedOrganizer);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 }
+
 }

@@ -10,7 +10,8 @@ const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
   password: { type: String, required: true },
   otp: { type: String },
   isVerified: { type: Boolean, default: false },
-  isGoogle:{type:Boolean, default: false}
+  isGoogle:{type:Boolean, default: false},
+  isBlocked:{type:Boolean, default: false}
 });
 
 
@@ -37,6 +38,7 @@ async createUser(user: UserEntity): Promise<UserEntity> {
       password: hashedPassword,
       isVerified: true, 
       isGoogle: true,
+      isBlocked: false,
     };
   } else {
     if (!user.password) {
@@ -91,6 +93,7 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
         password: user.password,
         otp: user.otp,
         isVerified: user.isVerified,
+        isBlocked: user.isBlocked,
       },
       { new: true }
     ).exec();
@@ -113,18 +116,35 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
     }
   }
 
-  async manageUsers(id: string, updateData: Partial<UserEntity>): Promise <UserEntity | null> {
+  async manageUsers(id: string, updateData: Partial<UserEntity>): Promise<UserEntity | null> {
     try {
       const userId = new ObjectId(id);
+      const user = await UserModel.findById(userId).exec();
+      console.log(user, 'user before blocking')
+  
+      if (!user) {
+        throw new Error('User not found');
+      }
+  
+      // Determine the new value for isBlocked
+      const newIsBlocked = updateData.isBlocked !== undefined ? updateData.isBlocked : user.isBlocked;
+  
+      // Create the update object with the new isBlocked value
+      const updateObject: Partial<UserEntity> = {
+        isBlocked: newIsBlocked, // Ensure isBlocked is set explicitly
+      };
+  
       const result = await UserModel.findOneAndUpdate(
-          { _id: userId },
-          { $set: updateData },
-          { new: true } 
+        { _id: userId },
+        { $set: updateObject },
+        { new: true }
       ).exec();
+      console.log(result, 'result in manageusers')
       return result ? result.toObject() : null;
-  } catch (error) {
+    } catch (error) {
       console.error('Error updating user:', error);
       throw new Error('Failed to update user');
+    }
   }
-  }
+  
 }

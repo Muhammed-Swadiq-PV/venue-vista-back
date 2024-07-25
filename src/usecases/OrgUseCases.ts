@@ -90,18 +90,30 @@ export class OrgUseCases {
     return organizer;
   }
 
-  async updateProfile( id: string, profileData: any): Promise<void> {
-    const organizer = await this.orgRepository.findOrganizerById(id);
-    if (!organizer) {
+
+  async updateProfile(userId: string, profileData: Partial<OrgEntity>): Promise<OrgEntity> {
+    // console.log('Inside updateProfile use case');
+    // console.log('userId:', userId);
+    // console.log('profileData:', profileData);
+  
+    const existingOrganizer = await this.orgRepository.findOrganizerById(userId);
+    if (!existingOrganizer) {
       throw new Error('Organizer not found');
     }
-    if (organizer.isBlocked) {
-      throw new Error('Organizer is blocked');
-    }
   
-    // Update the organizer profile with the new data
-    await this.orgRepository.updateProfile(id, profileData);
-    
+    // console.log('Existing organizer:', existingOrganizer);
+  
+    const updatedOrganizer = {
+      ...existingOrganizer,
+      ...profileData,
+    };
+  
+    // console.log('Updated organizer (before save):', updatedOrganizer);
+  
+    const savedOrganizer = await this.orgRepository.updateOrganizer(updatedOrganizer);
+    // console.log('Saved organizer:', savedOrganizer);
+  
+    return savedOrganizer;
   }
 
 }

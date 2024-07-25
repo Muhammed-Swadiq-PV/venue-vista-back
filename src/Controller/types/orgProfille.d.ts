@@ -1,24 +1,20 @@
-
-
 import { Request } from 'express';
-import { File } from 'multer';
 
-interface MulterFiles {
-    [fieldname: string]: File[] | undefined;
-}
-
+// Define the structure of the request body
 export interface CustomRequest extends Request {
     body: {
-      eventHallName?: string;
-      phoneNumber?: string;
-      district?: string;
-      city?: string;
-      buildingFloor?: string;
-      pincode?: string;
+        eventHallName?: string;
+        phoneNumber?: string;
+        district?: string;
+        city?: string;
+        buildingFloor?: string;
+        pincode?: string;
+        ownerIdCardUrl?: string;  // URL for owner ID card
+        eventHallLicenseUrl?: string;  // URL for event hall license
     };
-    files?: MulterFiles;
-  }
+}
 
-export interface CustomRequest extends Request {
-    files?: MulterFiles;
+// Extend for JWT if needed
+export interface CustomRequestWithJwt extends CustomRequest {
+    user?: { id: string; [key: string]: any };
 }
