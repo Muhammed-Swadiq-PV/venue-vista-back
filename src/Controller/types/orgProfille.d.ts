@@ -9,8 +9,8 @@ export interface CustomRequest extends Request {
         city?: string;
         buildingFloor?: string;
         pincode?: string;
-        ownerIdCardUrl?: string;  // URL for owner ID card
-        eventHallLicenseUrl?: string;  // URL for event hall license
+        ownerIdCardUrl?: string;  
+        eventHallLicenseUrl?: string;  
     };
 }
 

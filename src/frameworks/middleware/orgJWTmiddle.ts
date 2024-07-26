@@ -16,7 +16,7 @@ export const authenticateJWT = (req: CustomJwtRequest, res: Response, next: Next
   // console.log('Authorization header:', authHeader);
   if (authHeader) {
     const token = authHeader.split(' ')[1];
-    // console.log(token, 'token in jwt src/frameworks/middleware/orgJWTmiddle.ts')
+    console.log(token, 'token in jwt src/frameworks/middleware/orgJWTmiddle.ts')  
     // console.log(JWT_SECRET, 'to compare src/frameworks/middleware/orgJWTmiddle.ts')
 
     jwt.verify(token, JWT_SECRET, (err, user) => {

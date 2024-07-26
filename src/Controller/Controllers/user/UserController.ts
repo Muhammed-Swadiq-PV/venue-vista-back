@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { UserUseCases } from '../../../usecases/UserUseCases';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { CustomJwtRequest } from '../../../frameworks/middleware/orgJWTmiddle';
 
 dotenv.config();
 
