@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { OrgUseCases } from '../../../usecases/OrgUseCases';
 import { OrgEntity } from '../../../entity/models/OrgEntity';
 import { CustomRequestWithJwt } from '../../../interfaces/CustomRequestWithJwt';
+import { CustomPostRequestWithJwt } from '../../types/orgPost';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -215,6 +216,39 @@ async createProfile(req: CustomRequestWithJwt, res: Response): Promise<void> {
     const updatedOrganizer = await this.orgUseCases.updateProfile(userId, organizerData);
     res.status(201).json(updatedOrganizer);
   } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+async createPost(req: CustomPostRequestWithJwt, res: Response): Promise<void> {
+  try {
+    
+    if(!req.user || !req.user.id){
+      res.status(401).json({ error:'unauthorized' });
+      return;
+    }
+
+    const userId = req.user.id;
+
+    const {
+      main,
+      parking,
+      indoor,
+      stage,
+      dining
+    } = req.body;
+
+    const postData = {
+      main,
+      parking,
+      indoor,
+      stage,
+      dining
+    };
+
+    const newPost = await this.orgUseCases.createPost(userId, postData);
+    res.status(201).json(newPost);
+  } catch (error:any) {
     res.status(500).json({ error: error.message });
   }
 }

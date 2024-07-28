@@ -12,10 +12,6 @@ const admUseCases = new AdmUseCases(admRepository, userRepository);
 const admController = new AdmController(admUseCases);
 
 router.post('/signin', admController.signinAdmin.bind(admController));
-// I added this router chaining or nexted routes because the this context difference of the admController
-// router.get('/users', (req, res, next) => {
-//   next();
-// }, admController.fetchUsers.bind(admController));
 
 router.get('/users', admController.fetchUsers.bind(admController));
 

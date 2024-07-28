@@ -19,5 +19,9 @@ router.post('/create-profile', authenticateJWT, (req, res, next) => {
     orgController.createProfile(req, res);
   });//for updating profile also checking middleware
 
+router.post('/create-post', authenticateJWT, (req,res,next) => {
+   orgController.createPost(req,res);
+})//post details about hall
+
 
 export default router;

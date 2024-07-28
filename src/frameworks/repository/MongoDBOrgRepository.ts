@@ -1,5 +1,7 @@
 import { OrgEntity } from '../../entity/models/OrgEntity';
 import { OrgRepository } from '../../entity/repository/orgRepository';
+import { OrgPostEntity } from '../../entity/models/OrgPostEntity';
+import OrgPostModel from '../../entity/models/OrgPostModel';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 
@@ -159,4 +161,29 @@ export class MongoDBOrgRepository implements OrgRepository {
       throw error;
     }
   }
+
+  async createPost(post: OrgPostEntity): Promise<OrgPostEntity> {
+    const newPost = new OrgPostModel(post);
+    const savedPost = await newPost.save();
+    return savedPost.toObject();
+  }
+
+  // async findPostsByOrganizerId(organizerId: string): Promise<OrgPostEntity[]> {
+  //   return await OrgPostModel.find({ organizerId }).exec();
+  // }
+
+  // async updatePost(postId: string, post: Partial<OrgPostEntity>): Promise<OrgPostEntity | null> {
+  //   const updatedPost = await OrgPostModel.findByIdAndUpdate(postId, post, { new: true }).exec();
+  //   if (!updatedPost) {
+  //     throw new Error('Post not found or not updated');
+  //   }
+  //   return updatedPost.toObject();
+  // }
+
+  // async deletePost(postId: string): Promise<void> {
+  //   const result = await OrgPostModel.findByIdAndDelete(postId).exec();
+  //   if (!result) {
+  //     throw new Error('Post not found or not deleted');
+  //   }
+  // }
 }
