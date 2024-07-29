@@ -13,7 +13,7 @@ export interface OrgRepository {
 
     // Post-related methods
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;
-    // findPostsByOrganizerId(organizerId: string): Promise<OrgPostEntity[]>;
-    // updatePost(postId: string, post: Partial<OrgPostEntity>): Promise<OrgPostEntity | null>;
-    // deletePost(postId: string): Promise<void>;
+
+    getAllOrganizers(): Promise<OrgEntity[]>;
+    manageOrganizer(id: string, updateData: Partial<OrgEntity>): Promise<OrgEntity | null>;
 }

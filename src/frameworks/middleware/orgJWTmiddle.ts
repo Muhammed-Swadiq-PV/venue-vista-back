@@ -11,6 +11,7 @@ export interface CustomJwtRequest extends Request {
 }
 
 export const authenticateJWT = (req: CustomJwtRequest, res: Response, next: NextFunction): void => {
+  console.log('authenticate jwt reached')
   const authHeader = req.headers.authorization;
   // console.log(req.body, 'req.body in jwt')
   // console.log('Authorization header:', authHeader);

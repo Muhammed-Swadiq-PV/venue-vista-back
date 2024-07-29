@@ -16,4 +16,5 @@ export interface OrgEntity {
     ownerIdCardUrl?: string;
     eventHallLicenseUrl?: string;
     isProfileVerified?: boolean;
+    isProfileUpdated?: boolean;
 }

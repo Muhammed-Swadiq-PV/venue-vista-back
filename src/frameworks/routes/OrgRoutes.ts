@@ -3,10 +3,12 @@ import { OrgController } from '../../Controller/Controllers/organizer/OrgControl
 import { OrgUseCases } from '../../usecases/OrgUseCases';
 import { MongoDBOrgRepository } from '../../frameworks/repository/MongoDBOrgRepository';
 import { authenticateJWT } from '../middleware/orgJWTmiddle';
+import OrgPostModel from '../../entity/models/OrgPostModel';
+import { auth } from 'firebase-admin';
 
 const router = Router();
 
-const orgRepository = new MongoDBOrgRepository();
+const orgRepository = new MongoDBOrgRepository(OrgPostModel);
 const orgUseCases = new OrgUseCases(orgRepository);
 const orgController = new OrgController(orgUseCases);
 
@@ -22,6 +24,7 @@ router.post('/create-profile', authenticateJWT, (req, res, next) => {
 router.post('/create-post', authenticateJWT, (req,res,next) => {
    orgController.createPost(req,res);
 })//post details about hall
+
 
 
 export default router;

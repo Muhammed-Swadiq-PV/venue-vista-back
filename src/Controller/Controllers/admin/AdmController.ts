@@ -14,10 +14,10 @@ export class AdmController {
         this.admUseCases = admUseCases;
     }
 
-    async signinAdmin(req: Request, res: Response, next: NextFunction) : Promise<void> {
+    async signinAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { email, password } = req.body;
-            
+
             // console.log(req.body, 'admin req.body in controller')
             const admin = await this.admUseCases.signin(email, password);
 
@@ -26,11 +26,11 @@ export class AdmController {
             }
 
             const token = jwt.sign(
-                {  email: admin.email }, 
+                { email: admin.email },
                 JWT_SECRET,
-                { expiresIn: '1h' } 
+                { expiresIn: '1h' }
             );
-            res.status(200).json({ admin , token});
+            res.status(200).json({ admin, token });
         } catch (error: any) {
             console.error('Error signing in admin:', error.message);
             if (error.message === 'Admin not found' || error.message === 'Invalid password') {
@@ -55,20 +55,45 @@ export class AdmController {
     async blockUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             // console.log( 'is that blocked')
-          const { id } = req.params;
-          const { isBlocked } = req.body;
-    
-          // Assuming admUseCases has a method to toggle user block status
-          const updatedUser = await this.admUseCases.blockUser(id, isBlocked);
-    
-          if (updatedUser) {
-            res.status(200).json(updatedUser);
-          } else {
-            res.status(404).json({ error: 'User not found' });
-          }
+            const { id } = req.params;
+            const { isBlocked } = req.body;
+
+            const updatedUser = await this.admUseCases.blockUser(id, isBlocked);
+
+            if (updatedUser) {
+                res.status(200).json(updatedUser);
+            } else {
+                res.status(404).json({ error: 'User not found' });
+            }
         } catch (error: any) {
-          console.error('Error updating user status:', error.message);
-          res.status(500).json({ error: 'Failed to update user status' });
+            // console.error('Error updating user status:', error.message);
+            res.status(500).json({ error: 'Failed to update user status' });
         }
-      }
+    }
+
+    async fetchOrganizers(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const users = await this.admUseCases.fetchOrganizers();
+            res.status(200).json(users);
+        } catch (error: any) {
+            res.status(500).json({ error: 'failed to fetch organizers' });
+        }
+    }
+
+    async blockOrganizers(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id } = req.params;
+            const { isBlocked } = req.body;
+
+            const updatedOrganizer = await this.admUseCases.blockOrganizer(id, isBlocked);
+            if (updatedOrganizer) {
+                res.status(200).json(updatedOrganizer);
+            } else {
+                res.status(404).json({ error: 'organizer not found' });
+            }
+        } catch (error: any) {
+            res.status(500).json({ error: 'failed to update organizer status' });
+        }
+    }
+
 }

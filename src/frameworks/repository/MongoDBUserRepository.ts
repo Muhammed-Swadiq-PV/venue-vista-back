@@ -111,7 +111,7 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
       const users = await UserModel.find().exec();
       return users.map(user => user.toObject());
     } catch (error) {
-      console.error('Error fetching users:', error);
+      // console.error('Error fetching users:', error);
       throw new Error('Failed to fetch users');
     }
   }
@@ -139,10 +139,10 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
         { $set: updateObject },
         { new: true }
       ).exec();
-      console.log(result, 'result in manageusers')
+      // console.log(result, 'result in manageusers')
       return result ? result.toObject() : null;
     } catch (error) {
-      console.error('Error updating user:', error);
+      // console.error('Error updating user:', error);
       throw new Error('Failed to update user');
     }
   }

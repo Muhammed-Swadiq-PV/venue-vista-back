@@ -82,7 +82,11 @@ export class OrgUseCases {
     if (!isPasswordValid) {
       throw new Error('Invalid password');
     }
-
+    //making otp and password empty strings in jwt
+    if(organizer){
+      organizer.password = '';
+      organizer.otp = '' ;
+    }
     return organizer;
   }
 
@@ -102,26 +106,19 @@ export class OrgUseCases {
 
 
   async updateProfile(userId: string, profileData: Partial<OrgEntity>): Promise<OrgEntity> {
-    // console.log('Inside updateProfile use case');
-    // console.log('userId:', userId);
-    // console.log('profileData:', profileData);
 
     const existingOrganizer = await this.orgRepository.findOrganizerById(userId);
     if (!existingOrganizer) {
       throw new Error('Organizer not found');
     }
 
-    // console.log('Existing organizer:', existingOrganizer);
-
     const updatedOrganizer = {
       ...existingOrganizer,
       ...profileData,
     };
 
-    // console.log('Updated organizer (before save):', updatedOrganizer);
 
     const savedOrganizer = await this.orgRepository.updateOrganizer(updatedOrganizer);
-    // console.log('Saved organizer:', savedOrganizer);
 
     return savedOrganizer;
   }
@@ -151,7 +148,4 @@ export class OrgUseCases {
 
   }
 
-  // async findPostsByOrganizerId(organizerId: string): Promise<OrgPostEntity[]> {
-  //     return await this.orgRepository.findPostsByOrganizerId(organizerId);
-  // }
 }

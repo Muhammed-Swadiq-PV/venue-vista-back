@@ -1,16 +1,20 @@
 // import { MongoDBAdmRepository } from '../frameworks/repository/MongoDBAdmRepository';
 import { admRepository } from '../entity/repository/admRepository';
 import { UserRepository } from '../entity/repository/userRepository';
+import { OrgRepository } from '../entity/repository/orgRepository';
 import { AdmEntity } from '../entity/models/AdmEntity';
 import { UserEntity } from '../entity/models/UserEntity';
+import { OrgEntity } from '../entity/models/OrgEntity';
 
 export class AdmUseCases {
     private admRepository: admRepository;
     private userRepository: UserRepository;
+    private orgRepository: OrgRepository;
 
-    constructor(admRepository: admRepository , userRepository: UserRepository) {
+    constructor(admRepository: admRepository , userRepository: UserRepository , orgRepository: OrgRepository) {
         this.admRepository = admRepository;
         this.userRepository = userRepository;
+        this.orgRepository = orgRepository;
     }
 
     async signin(email: string, password: string): Promise<AdmEntity | null> {
@@ -53,6 +57,28 @@ export class AdmUseCases {
         } catch (error) {
             console.error('Error in blockUser use case:', error);
             throw new Error('Failed to update user status');
+        }
+    }
+
+    async fetchOrganizers(): Promise<any[]> {
+        try{
+            const users = await this.orgRepository.getAllOrganizers();
+       
+            return users;
+        }catch(error){
+            throw new Error('failed to fetch organizers');
+        }
+    }
+
+    async blockOrganizer(id: string, isBlocked: boolean): Promise<OrgEntity | null> {
+        try {
+            const updatedOrganizer = await this.orgRepository.manageOrganizer(id, { isBlocked });
+            if(!updatedOrganizer){
+                throw new Error('organizer not found');
+            }
+            return updatedOrganizer;
+        } catch (error) {
+            throw new Error ('Failed to update organizer status');
         }
     }
 }

@@ -1,7 +1,9 @@
 import { OrgEntity } from '../../entity/models/OrgEntity';
 import { OrgRepository } from '../../entity/repository/orgRepository';
 import { OrgPostEntity } from '../../entity/models/OrgPostEntity';
+import { OrgPostDocument } from '../../entity/models/OrgPostDocument';
 import OrgPostModel from '../../entity/models/OrgPostModel';
+import { ObjectId } from 'mongodb';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 
@@ -21,13 +23,25 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
   pincode: { type: String },
   ownerIdCardUrl: { type: Schema.Types.Mixed },
   eventHallLicenseUrl: { type: Schema.Types.Mixed },
-  isProfileVerified: { type: Boolean, default: false }
+  isProfileVerified: { type: Boolean, default: false },
+  isProfileUpdated: { type: Boolean, default: false }
 });
 
 
 const OrgModel: Model<OrgEntity & Document> = mongoose.model('Organizer', organizerSchema);
 
 export class MongoDBOrgRepository implements OrgRepository {
+
+  private orgModel: Model<OrgEntity & Document>;
+  private postModel: Model<OrgPostDocument>;
+
+
+  constructor(postModel: Model<OrgPostDocument>) {
+    this.orgModel = OrgModel; // Use the defined model
+    this.postModel = postModel;
+  }
+
+  
   async createOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
     let newOrganizer: OrgEntity;
 
@@ -138,7 +152,8 @@ export class MongoDBOrgRepository implements OrgRepository {
         buildingFloor: organizer.buildingFloor,
         pincode: organizer.pincode,
         ownerIdCardUrl: organizer.ownerIdCardUrl,
-        eventHallLicenseUrl: organizer.eventHallLicenseUrl
+        eventHallLicenseUrl: organizer.eventHallLicenseUrl,
+        isProfileUpdated: true  
       };
 
       // console.log(updateFields, 'updatefields in mongodborgrepository')
@@ -162,28 +177,52 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
+
+  // get all organizers to show for admin
+  async getAllOrganizers(): Promise<OrgEntity[]> {
+    try {
+      const users = await OrgModel.find().exec();
+      return users.map(user => user.toObject());
+      
+    } catch (error) {
+      throw new Error('Failed to fetch organizer');
+    }
+  }
+
+  async manageOrganizer(id: string, updateData: Partial<OrgEntity> ): Promise<OrgEntity | null> {
+    try {
+      const userId = new ObjectId(id);
+      const organizer = await OrgModel.findById(userId).exec();
+      console.log(organizer , 'organizer before blocking');
+
+      if(!organizer){
+        throw new Error ('organizer not found');
+      }
+
+      const newIsBlocked = updateData.isBlocked !== undefined ? updateData.isBlocked : organizer.isBlocked;
+
+      const updateObject: Partial<OrgEntity> = {
+        isBlocked: newIsBlocked, // Ensure isBlocked is set explicitly
+      };
+
+      const result = await OrgModel.findOneAndUpdate(
+        { _id: userId },
+        { $set: updateObject },
+        { new: true }
+      ).exec();
+
+      return result ? result.toObject() : null;
+    } catch (error) {
+      throw new Error('Failed to update user');
+    }
+  }
+
   async createPost(post: OrgPostEntity): Promise<OrgPostEntity> {
     const newPost = new OrgPostModel(post);
     const savedPost = await newPost.save();
     return savedPost.toObject();
   }
 
-  // async findPostsByOrganizerId(organizerId: string): Promise<OrgPostEntity[]> {
-  //   return await OrgPostModel.find({ organizerId }).exec();
-  // }
 
-  // async updatePost(postId: string, post: Partial<OrgPostEntity>): Promise<OrgPostEntity | null> {
-  //   const updatedPost = await OrgPostModel.findByIdAndUpdate(postId, post, { new: true }).exec();
-  //   if (!updatedPost) {
-  //     throw new Error('Post not found or not updated');
-  //   }
-  //   return updatedPost.toObject();
-  // }
 
-  // async deletePost(postId: string): Promise<void> {
-  //   const result = await OrgPostModel.findByIdAndDelete(postId).exec();
-  //   if (!result) {
-  //     throw new Error('Post not found or not deleted');
-  //   }
-  // }
 }

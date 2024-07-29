@@ -76,7 +76,6 @@ export class OrgController {
     createGoogleOrganizer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { email, name } = req.body;
-        // console.log(email, name, 'request body google controller data');
   
         if (!email || !name) {
           throw new Error('Email or name not provided');
@@ -112,12 +111,10 @@ export class OrgController {
      // Sign In
      signInOrganizer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // console.log('Received sign-in request:', req.body);
 
       const { email, password } = req.body;
 
       const organizer = await this.orgUseCases.signInOrganizer(email, password);
-      // console.log('User signed in successfully:', user);
       //generating jwt token for organizer who created account normally at signin
       if(!organizer){
         throw new Error("organizer not found");
@@ -142,7 +139,6 @@ export class OrgController {
   signInGoogle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email } = req.body;
-      // console.log(email, "email in sign in google")
       const organizer = await this.orgUseCases.signInGoogle(email);
 
       if (!organizer) {
@@ -178,15 +174,12 @@ export class OrgController {
 
 async createProfile(req: CustomRequestWithJwt, res: Response): Promise<void> {
   try {
-    // console.log('req.user:', req.user);
     if (!req.user || !req.user.id) {
       res.status(401).json({ error: 'Unauthorized' });
       return ;
     }
 
     const userId = req.user.id;
-    // console.log(userId, 'userid in controller')
-    // console.log(req.body, 'co==req.body')
 
     const {
       eventHallName,
@@ -209,9 +202,6 @@ async createProfile(req: CustomRequestWithJwt, res: Response): Promise<void> {
       ownerIdCardUrl,
       eventHallLicenseUrl
     }
-
-    // console.log(organizerData, 'organizer data')
-
     // Pass userId and profile data to the use case
     const updatedOrganizer = await this.orgUseCases.updateProfile(userId, organizerData);
     res.status(201).json(updatedOrganizer);
