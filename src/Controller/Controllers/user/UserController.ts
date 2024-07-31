@@ -3,6 +3,7 @@ import { UserUseCases } from '../../../usecases/UserUseCases';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { CustomJwtRequest } from '../../../frameworks/middleware/orgJWTmiddle';
+import { EventHallWithOrganizerDetails } from '../../../interfaces/eventHallwithOrganizer'
 
 dotenv.config();
 
@@ -177,5 +178,27 @@ export class UserController {
       }
     }
   };
+
+  mainEventHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const details: EventHallWithOrganizerDetails | null = await this.userUseCases.fetchHallWithOrganizerDetails();
+      console.log(details, 'in controller hall complete details')
+      
+      if (!details) {
+        res.status(404).json({ message: 'Event hall details not found' });
+        return; // Ensure method exits after sending response
+      }
+      
+      res.status(200).json(details);
+    } catch (error: any) {
+      console.error('Error fetching hall details:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Internal server error' });
+      }
+      // No return here as the method already ends
+    }
+  }
+  
+   
   
 }

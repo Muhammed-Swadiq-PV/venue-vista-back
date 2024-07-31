@@ -1,13 +1,16 @@
 import { UserRepository } from '../entity/repository/userRepository';
+import { OrgRepository } from '../entity/repository/orgRepository';
 import { UserEntity } from '../entity/models/UserEntity';
-import axios from 'axios';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
+import {EventHallWithOrganizerDetails} from '../interfaces/eventHallwithOrganizer'
 
 export class UserUseCases {
   private userRepository: UserRepository;
+  private orgRepository: OrgRepository;
 
-  constructor(userRepository: UserRepository) {
+  constructor(userRepository: UserRepository , orgRepository: OrgRepository) {
     this.userRepository = userRepository;
+    this.orgRepository = orgRepository;
   }
 
   async createUser(user: UserEntity): Promise<UserEntity> {
@@ -111,4 +114,7 @@ export class UserUseCases {
     return user;
   }
   
+  async fetchHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null> {
+    return await this.orgRepository.getHallWithOrganizerDetails();
+  }
 }

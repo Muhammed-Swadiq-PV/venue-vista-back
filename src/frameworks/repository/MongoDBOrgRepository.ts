@@ -7,6 +7,9 @@ import { ObjectId } from 'mongodb';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 
+import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
+
+
 const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -153,7 +156,7 @@ export class MongoDBOrgRepository implements OrgRepository {
         pincode: organizer.pincode,
         ownerIdCardUrl: organizer.ownerIdCardUrl,
         eventHallLicenseUrl: organizer.eventHallLicenseUrl,
-        isProfileUpdated: true  
+        isProfileUpdated: false,
       };
 
       // console.log(updateFields, 'updatefields in mongodborgrepository')
@@ -193,7 +196,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     try {
       const userId = new ObjectId(id);
       const organizer = await OrgModel.findById(userId).exec();
-      console.log(organizer , 'organizer before blocking');
+      // console.log(organizer , 'organizer before blocking');
 
       if(!organizer){
         throw new Error ('organizer not found');
@@ -223,6 +226,81 @@ export class MongoDBOrgRepository implements OrgRepository {
     return savedPost.toObject();
   }
 
+  async getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null> {
+    try {
+        console.log('Request coming here');
+        
+        const result = await OrgPostModel.aggregate([
+            {
+                $lookup: {
+                    from: 'organizers',
+                    localField: 'organizerId',
+                    foreignField: '_id',
+                    as: 'organizerDetails'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$organizerDetails',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    organizerId: 1,
+                    main: 1,
+                    parking: 1,
+                    indoor: 1,
+                    stage: 1,
+                    dining: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    'organizerDetails._id': 1,
+                    'organizerDetails.name': 1,
+                    'organizerDetails.email': 1,
+                    'organizerDetails.phoneNumber': 1,
+                    'organizerDetails.buildingFloor': 1,
+                    'organizerDetails.city': 1,
+                    'organizerDetails.district': 1
+                }
+            }
+        ]).exec();
 
+        if (result.length === 0) {
+            console.log('No data found');
+            return null;
+        }
 
+        const eventHallsWithOrganizerDetails: EventHallWithOrganizerDetails = {
+            eventHalls: result.map(item => ({
+                _id: item._id,
+                organizerId: item.organizerId,
+                main: item.main,
+                parking: item.parking,
+                indoor: item.indoor,
+                stage: item.stage,
+                dining: item.dining,
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt
+            })),
+            organizers: result.map(item => ({
+                _id: item.organizerDetails._id,
+                name: item.organizerDetails.name,
+                email: item.organizerDetails.email,
+                phoneNumber: item.organizerDetails.phoneNumber,
+                buildingFloor: item.organizerDetails.buildingFloor,
+                city: item.organizerDetails.city,
+                district: item.organizerDetails.district
+            }))
+        };
+
+        return eventHallsWithOrganizerDetails;
+    } catch (error) {
+        console.error('Error fetching main event halls with organizer details:', error);
+        throw new Error('Failed to fetch main event halls with organizer details');
+    }
 }
+}
+
+

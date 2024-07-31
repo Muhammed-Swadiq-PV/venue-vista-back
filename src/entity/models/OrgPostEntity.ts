@@ -1,6 +1,9 @@
 // src/entity/models/OrgPostEntity.ts
+
+import mongoose from "mongoose";
+
 export interface OrgPostEntity {
-  organizerId: string;
+  organizerId: mongoose.Types.ObjectId;
   main?: VenueSection;
   parking?: VenueSection;
   indoor?: VenueSection;

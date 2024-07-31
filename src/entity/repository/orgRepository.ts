@@ -1,6 +1,7 @@
 // src/entity/repository/orgRepository.ts
 import { OrgEntity } from '../models/OrgEntity';
 import { OrgPostEntity } from '../models/OrgPostEntity';
+import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer'
 
 export interface OrgRepository {
     createOrganizer(organizer: OrgEntity): Promise<OrgEntity>;
@@ -13,7 +14,10 @@ export interface OrgRepository {
 
     // Post-related methods
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;
-
+    //for admin related tasks
     getAllOrganizers(): Promise<OrgEntity[]>;
     manageOrganizer(id: string, updateData: Partial<OrgEntity>): Promise<OrgEntity | null>;
+    //for user related tasks
+    getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null>;
+
 }

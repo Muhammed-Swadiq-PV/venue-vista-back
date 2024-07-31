@@ -2,6 +2,7 @@ import { OrgRepository } from '../entity/repository/orgRepository';
 import { OrgEntity } from '../entity/models/OrgEntity';
 import { OrgPostEntity } from '../entity/models/OrgPostEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
+import mongoose from 'mongoose';
 
 export class OrgUseCases {
   private orgRepository: OrgRepository;
@@ -129,9 +130,11 @@ export class OrgUseCases {
       throw new Error('Organizer not found');
     }
 
+    const organizerId = new mongoose.Types.ObjectId(userId);
+
     const newPost: OrgPostEntity = {
       ...postData,
-      organizerId: userId,
+      organizerId: organizerId,
       createdAt: new Date(),
       updatedAt: new Date(),
       ...postData,

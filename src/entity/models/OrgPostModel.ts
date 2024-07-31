@@ -9,7 +9,7 @@ const VenueSectionSchema = new Schema<VenueSection>({
 }, { _id: false });
 
 const OrgPostSchema = new Schema<OrgPostDocument>({
-  organizerId: { type: String, required: true },
+  organizerId: { type: Schema.Types.ObjectId, ref: 'Organizer', required: true },
   main: { type: VenueSectionSchema, required: false },
   parking: { type: VenueSectionSchema, required: false },
   indoor: { type: VenueSectionSchema, required: false },

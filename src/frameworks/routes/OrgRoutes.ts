@@ -26,5 +26,4 @@ router.post('/create-post', authenticateJWT, (req,res,next) => {
 })//post details about hall
 
 
-
 export default router;

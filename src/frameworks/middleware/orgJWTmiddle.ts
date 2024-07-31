@@ -13,8 +13,6 @@ export interface CustomJwtRequest extends Request {
 export const authenticateJWT = (req: CustomJwtRequest, res: Response, next: NextFunction): void => {
   console.log('authenticate jwt reached')
   const authHeader = req.headers.authorization;
-  // console.log(req.body, 'req.body in jwt')
-  // console.log('Authorization header:', authHeader);
   if (authHeader) {
     const token = authHeader.split(' ')[1];
     console.log(token, 'token in jwt src/frameworks/middleware/orgJWTmiddle.ts')  
@@ -26,7 +24,7 @@ export const authenticateJWT = (req: CustomJwtRequest, res: Response, next: Next
       }
 
       req.user = user as { id: string }; 
-      console.log('User from JWT:', req.user); 
+      // console.log('User from JWT:', req.user); 
       next();
     });
   } else {
