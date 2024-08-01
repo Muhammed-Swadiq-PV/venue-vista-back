@@ -13,16 +13,22 @@ const orgUseCases = new OrgUseCases(orgRepository);
 const orgController = new OrgController(orgUseCases);
 
 router.post('/signup', orgController.createOrganizer); //signup through normal signup
-router.post('/verify' , orgController.verifyOrganizer); //otp verification
+router.post('/verify', orgController.verifyOrganizer); //otp verification
 router.post('/google-auth', orgController.createGoogleOrganizer); //signup through google OAuth
 router.post('/signin', orgController.signInOrganizer); //signin through email and password
 router.post('/signin-google', orgController.signInGoogle); // signin through google OAuth 
 router.post('/create-profile', authenticateJWT, (req, res, next) => {
-    orgController.createProfile(req, res);
-  });//for updating profile also checking middleware
+  orgController.createProfile(req, res);
+});//for updating profile also checking middleware
 
-router.post('/create-post', authenticateJWT, (req,res,next) => {
-   orgController.createPost(req,res);
+// router.get('/presigned-url/upload', authenticateJWT, (req, res, next) => {
+//   orgController.getPresignedUrl(req, res);
+// });
+
+router.get('/presigned-url', orgController.getPresignedUrl.bind(orgController));
+
+router.post('/create-post', authenticateJWT, (req, res, next) => {
+  orgController.createPost(req, res);
 })//post details about hall
 
 

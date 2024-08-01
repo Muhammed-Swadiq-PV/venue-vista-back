@@ -210,6 +210,36 @@ async createProfile(req: CustomRequestWithJwt, res: Response): Promise<void> {
   }
 }
 
+async getPresignedUrl(req: Request, res: Response): Promise<void> {
+  console.log(req.query, 'coming inside controller before try');
+  const { fileName, fileType, operation, expiresIn } = req.query as { 
+    fileName: string; 
+    fileType: string; 
+    operation: 'upload' | 'download';
+    expiresIn?: string;
+  };
+
+  // URL-decode fileType if needed
+  const decodedFileType = decodeURIComponent(fileType);
+  console.log('Decoded file type:', decodedFileType);
+
+  try {
+    console.log('Coming inside controller');
+    const url = await this.orgUseCases.getPresignedUrl(
+      fileName, 
+      decodedFileType, 
+      operation, 
+      expiresIn ? parseInt(expiresIn) : undefined
+    );
+    console.log('URL in controller after presign:', url);
+    res.status(200).json({ url });
+  } catch (error) {
+    console.error('Error generating presigned URL:', error);
+    res.status(500).json({ error: 'Failed to generate presigned URL' });
+  }
+}
+
+
 async createPost(req: CustomPostRequestWithJwt, res: Response): Promise<void> {
   try {
     

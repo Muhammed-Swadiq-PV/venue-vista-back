@@ -2,6 +2,8 @@ import { OrgRepository } from '../entity/repository/orgRepository';
 import { OrgEntity } from '../entity/models/OrgEntity';
 import { OrgPostEntity } from '../entity/models/OrgPostEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
+// import { generateUploadPresignedUrl, generateDownloadPresignedUrl } from '../services/s3Services';
+import { GetPresignedUrlUseCase } from './GetPresignedUrlUseCases';
 import mongoose from 'mongoose';
 
 export class OrgUseCases {
@@ -122,6 +124,13 @@ export class OrgUseCases {
     const savedOrganizer = await this.orgRepository.updateOrganizer(updatedOrganizer);
 
     return savedOrganizer;
+  }
+
+  //generating presigned url for s3 bucket
+
+  async getPresignedUrl(fileName: string, fileType: string, operation: 'upload' | 'download', expiresIn?: number): Promise<string> {
+    const getPresignedUrlUseCase = new GetPresignedUrlUseCase();
+    return getPresignedUrlUseCase.execute(fileName, fileType, operation, expiresIn);
   }
 
   async createPost(userId: string, postData: Partial<OrgPostEntity>): Promise<OrgPostEntity> {
