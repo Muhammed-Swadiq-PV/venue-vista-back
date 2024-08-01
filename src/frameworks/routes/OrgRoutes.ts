@@ -8,6 +8,7 @@ import { auth } from 'firebase-admin';
 
 const router = Router();
 
+
 const orgRepository = new MongoDBOrgRepository(OrgPostModel);
 const orgUseCases = new OrgUseCases(orgRepository);
 const orgController = new OrgController(orgUseCases);
@@ -20,10 +21,6 @@ router.post('/signin-google', orgController.signInGoogle); // signin through goo
 router.post('/create-profile', authenticateJWT, (req, res, next) => {
   orgController.createProfile(req, res);
 });//for updating profile also checking middleware
-
-// router.get('/presigned-url/upload', authenticateJWT, (req, res, next) => {
-//   orgController.getPresignedUrl(req, res);
-// });
 
 router.get('/presigned-url', orgController.getPresignedUrl.bind(orgController));
 

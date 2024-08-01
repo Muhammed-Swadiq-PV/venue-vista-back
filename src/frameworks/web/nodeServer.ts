@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 
 import MongoDB from '../db/MongoDB';
 import userRoutes from '../routes/UserRoutes';
@@ -31,6 +32,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Use routes
 app.use('/users', userRoutes);
