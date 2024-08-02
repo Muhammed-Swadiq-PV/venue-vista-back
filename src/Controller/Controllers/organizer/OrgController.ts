@@ -61,7 +61,7 @@ export class OrgController {
       const accessToken = generateOrgAccessToken(organizer, JWT_SECRET as string);
       const refreshToken = generateOrgRefreshToken(organizer, REFRESH_TOKEN_SECRET as string);
 
-      await saveRefreshToken(organizer.id, refreshToken);
+      await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
       res.status(200).json({ message: 'signed up successfully with!', organizer, accessToken, refreshToken });
     } catch (error: any) {
@@ -102,7 +102,7 @@ export class OrgController {
       const accessToken = generateOrgAccessToken(organizer, JWT_SECRET as string);
       const refreshToken = generateOrgRefreshToken(organizer, REFRESH_TOKEN_SECRET as string);
 
-      await saveRefreshToken(organizer.id, refreshToken);
+      await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
       res.status(200).json({ message: 'signed up successfully with Google!', organizer, accessToken, refreshToken });
     } catch (error: any) {
@@ -127,7 +127,7 @@ export class OrgController {
       const accessToken = generateOrgAccessToken(organizer, JWT_SECRET as string);
       const refreshToken = generateOrgRefreshToken(organizer, REFRESH_TOKEN_SECRET as string);
       // console.log(refreshToken, 'refresh token in controller')
-      await saveRefreshToken(organizer.id, refreshToken);
+      await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
       res.status(200).json({ organizer, accessToken, refreshToken });
     } catch (error: any) {
@@ -161,7 +161,7 @@ export class OrgController {
       const refreshToken = generateOrgRefreshToken(organizer, REFRESH_TOKEN_SECRET as string);
 
       // Save refresh token to database or memory
-      await saveRefreshToken(organizer.id, refreshToken);
+      await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
       res.status(200).json({ organizer, accessToken, refreshToken });
     } catch (error: any) {

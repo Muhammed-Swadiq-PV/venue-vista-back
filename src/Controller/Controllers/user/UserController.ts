@@ -1,13 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserUseCases } from '../../../usecases/UserUseCases';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { CustomJwtRequest } from '../../../frameworks/middleware/orgJWTmiddle';
-import { EventHallWithOrganizerDetails } from '../../../interfaces/eventHallwithOrganizer'
+import { EventHallWithOrganizerDetails } from '../../../interfaces/eventHallwithOrganizer';
+//jwt token related 
+import { generateUserAccessToken } from '../../../utils/tokenUtils';
+import { generateUserRefreshToken } from '../../../utils/tokenUtils';
+import { saveRefreshToken } from '../../../usecases/RefreshTokenUseCases';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
 export class UserController {
   private userUseCases: UserUseCases;
@@ -59,16 +62,16 @@ export class UserController {
 
       const user = await this.userUseCases.createGoogleUser({ email, name, password });
 
-      // console.log('User created successfully with Google:', user);
+      if(!user || !user.id){
+        throw new Error('user not found');
+      }
 
-       // Generate JWT token for normal signed up user after verifying otp
-       const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name, isBlocked: user.isBlocked },
-        JWT_SECRET,
-        { expiresIn: '1h' } // Token expires in 1 hour
-      );
+      const accessToken = generateUserAccessToken(user, JWT_SECRET as string);
+      const refreshToken = generateUserRefreshToken(user, REFRESH_TOKEN_SECRET as string);
 
-      res.status(201).json({ message: 'Signed up successfully with Google!', user, token});
+      await saveRefreshToken(user.id, refreshToken, 'user');
+
+      res.status(201).json({ message: 'Signed up successfully with Google!', user, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Google OAuth error:', error);
       res.status(500).json({ error: 'Failed to sign up with Google. Please try again.' });
@@ -105,13 +108,16 @@ export class UserController {
       const { email, otp } = req.body;
       const user = await this.userUseCases.verifyUser(email, otp);
 
-      const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name, isBlocked: user.isBlocked },
-        JWT_SECRET,
-        { expiresIn: '1h' } // Token expires in 1 hour
-      );
+      if(!user || !user.id){
+        throw new Error('user not found');
+      }
 
-      res.status(200).json({ message: 'User verified successfully', user , token });
+      const accessToken = generateUserAccessToken(user, JWT_SECRET as string);
+      const refreshToken = generateUserRefreshToken(user, REFRESH_TOKEN_SECRET as string);
+
+      await saveRefreshToken(user.id, refreshToken, 'user');
+
+      res.status(200).json({ message: 'User verified successfully', user , accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error verifying user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid OTP') {
@@ -132,17 +138,16 @@ export class UserController {
       const user = await this.userUseCases.signInUser(email, password);
       // console.log('User signed in successfully:', user);
 
-      if(!user){
+      if(!user || !user.id ){
         throw new Error('user not found');
       }
 
-      const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name, isBlocked: user.isBlocked },
-        JWT_SECRET,
-        { expiresIn: '1h' } // Token expires in 1 hour
-      );
+      const accessToken = generateUserAccessToken(user, JWT_SECRET as string);
+      const refreshToken = generateUserRefreshToken(user, REFRESH_TOKEN_SECRET as string);
 
-      res.status(200).json({user , token});
+      await saveRefreshToken(user.id, refreshToken, 'user');
+
+      res.status(200).json({user , accessToken, refreshToken});
     } catch (error: any) {
       console.error('Error signing in user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid password' || error.message === 'User not verified') {
@@ -159,16 +164,16 @@ export class UserController {
       console.log(email, "email in sign in google")
       const user = await this.userUseCases.signInGoogle(email);
 
-      if(!user){
+      if(!user || !user.id ){
         throw new Error('user not found');
       }
-      const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name, isBlocked: user.isBlocked },
-        JWT_SECRET,
-        { expiresIn: '1h' } // Token expires in 1 hour
-      );
 
-      res.status(200).json({user , token});
+      const accessToken = generateUserAccessToken(user, JWT_SECRET as string);
+      const refreshToken = generateUserRefreshToken(user, REFRESH_TOKEN_SECRET as string);
+
+      await saveRefreshToken(user.id, refreshToken, 'user');
+
+      res.status(200).json({user , accessToken, refreshToken});
     } catch (error: any) {
       console.error('Error signing in user:', error.message);
       if (error.message === 'User not found' || error.message === 'User not verified' || error.message === 'User not signed up with Google auth') {

@@ -1,9 +1,9 @@
 export interface UserEntity {
-    id ?: String;
+    id ?: string;
     name: string;
     email: string;
     password?: string;
-    otp?: String;
+    otp?: string;
     isVerified?: boolean;
     token?: string;
     isGoogle?: boolean;

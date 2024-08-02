@@ -18,7 +18,7 @@ export const authenticateJWT = async (req: CustomJwtRequest, res: Response, next
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1]; // Extract token from "Bearer <token>"
 
-    console.log('Token received:', token);
+    // console.log('Token received:', token);
 
     try {
       // Verify the token

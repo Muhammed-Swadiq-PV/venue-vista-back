@@ -1,11 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from 'jsonwebtoken';
 import { AdmUseCases } from '../../../usecases/AdmUseCases';
+import { generateAdmAccessToken } from "../../../utils/tokenUtils";
+import { generateAdmRefreshToken } from "../../../utils/tokenUtils";
+import { saveRefreshToken } from "../../../usecases/RefreshTokenUseCases";
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
 export class AdmController {
     private admUseCases: AdmUseCases;
@@ -25,12 +29,12 @@ export class AdmController {
                 throw new Error('Admin not found');
             }
 
-            const token = jwt.sign(
-                { email: admin.email },
-                JWT_SECRET,
-                { expiresIn: '1h' }
-            );
-            res.status(200).json({ admin, token });
+ 
+            const accessToken = generateAdmAccessToken(admin, JWT_SECRET as string);
+            const refreshToken = generateAdmRefreshToken(admin, REFRESH_TOKEN_SECRET as string);
+      
+            await saveRefreshToken( email, refreshToken, 'admin');
+            res.status(200).json({ admin, accessToken, refreshToken });
         } catch (error: any) {
             console.error('Error signing in admin:', error.message);
             if (error.message === 'Admin not found' || error.message === 'Invalid password') {
