@@ -22,7 +22,6 @@ export class UserController {
   // Signup
   createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // console.log('Received signup request:', req.body);
 
       const { name, email, password } = req.body;
       const user = await this.userUseCases.createUser({ name, email, password });
@@ -131,12 +130,10 @@ export class UserController {
   // Sign In
   signInUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // console.log('Received sign-in request:', req.body);
 
       const { email, password } = req.body;
 
       const user = await this.userUseCases.signInUser(email, password);
-      // console.log('User signed in successfully:', user);
 
       if(!user || !user.id ){
         throw new Error('user not found');
@@ -161,7 +158,6 @@ export class UserController {
   signInGoogle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email } = req.body;
-      console.log(email, "email in sign in google")
       const user = await this.userUseCases.signInGoogle(email);
 
       if(!user || !user.id ){
@@ -186,23 +182,22 @@ export class UserController {
 
   mainEventHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      console.log('checking for data')
       const details: EventHallWithOrganizerDetails | null = await this.userUseCases.fetchHallWithOrganizerDetails();
-      console.log(details, 'in controller hall complete details')
       
       if (!details) {
         res.status(404).json({ message: 'Event hall details not found' });
         return; // Ensure method exits after sending response
       }
-      
+      console.log(details)
       res.status(200).json(details);
     } catch (error: any) {
       console.error('Error fetching hall details:', error);
       if (!res.headersSent) {
         res.status(500).json({ message: 'Internal server error' });
       }
-      // No return here as the method already ends
     }
-  }
+  };
   
    
   

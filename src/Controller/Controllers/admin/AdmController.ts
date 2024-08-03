@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from 'jsonwebtoken';
 import { AdmUseCases } from '../../../usecases/AdmUseCases';
 import { generateAdmAccessToken } from "../../../utils/tokenUtils";
 import { generateAdmRefreshToken } from "../../../utils/tokenUtils";
@@ -29,11 +28,11 @@ export class AdmController {
                 throw new Error('Admin not found');
             }
 
- 
+
             const accessToken = generateAdmAccessToken(admin, JWT_SECRET as string);
             const refreshToken = generateAdmRefreshToken(admin, REFRESH_TOKEN_SECRET as string);
-      
-            await saveRefreshToken( email, refreshToken, 'admin');
+
+            await saveRefreshToken(email, refreshToken, 'admin');
             res.status(200).json({ admin, accessToken, refreshToken });
         } catch (error: any) {
             console.error('Error signing in admin:', error.message);
@@ -97,6 +96,58 @@ export class AdmController {
             }
         } catch (error: any) {
             res.status(500).json({ error: 'failed to update organizer status' });
+        }
+    }
+
+    async fetchPendingOrganizers(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const organizers = await this.admUseCases.fetchPendingOrganizers();
+            res.status(200).json(organizers);
+        } catch (error) {
+            res.status(500).json({ erorr: 'error to fetch organizers' });
+        }
+    }
+
+    async fetchPendingOrganizerWithId(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        try {
+            const organizer = await this.admUseCases.fetchPendingOrganizerWithId(id);
+            if (organizer) {
+                res.json(organizer);
+            } else {
+                res.status(404).json({ message: 'Organizer not found' });
+            }
+        } catch (error) {
+            res.status(500).json({ message: 'Internal server error', error });
+        }
+    }
+
+    async approveOrganizer(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        try {
+            const organizer = await this.admUseCases.approveOrganizer(id);
+            if (organizer) {
+                res.json(organizer);
+            } else {
+                res.status(404).json({ message: 'organizer not found' });
+            }
+        } catch (error) {
+            res.status(500).json({ message: 'Internal server error', error });
+        }
+    }
+
+    async disapproveOrganizer(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        try {
+            const organizer = await this.admUseCases.disApproveOrganizer(id);
+            if(organizer) {
+                res.json(organizer);
+            } else {
+                res.status(404).json({ message: 'Organizer not found' });
+            }
+        } catch (error) {
+            res.status(500).json({ message: 'internal server error', error });
+            
         }
     }
 

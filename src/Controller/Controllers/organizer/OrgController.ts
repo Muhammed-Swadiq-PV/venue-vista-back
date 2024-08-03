@@ -95,6 +95,7 @@ export class OrgController {
 
       // console.log('Organizer created successfully with Google:', organizer);
       if(!organizer || !organizer.id){
+        console.log('not organizer');
         throw new Error('organizer not found');
       }
 

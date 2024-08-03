@@ -23,5 +23,11 @@ router.get('/organizer' , admController.fetchOrganizers.bind(admController));
 
 router.patch('/organizer/:id', admController.blockOrganizers.bind(admController));
 
+router.get('/pending-requests', admController.fetchPendingOrganizers.bind(admController));
+router.get('/pending-request/:id', admController.fetchPendingOrganizerWithId.bind(admController));
+router.patch('/organizer/:id/approve', admController.approveOrganizer.bind(admController));
+router.patch('/organizer/:id/disapprove', admController.disapproveOrganizer.bind(admController));
+
+
 
 export default router;

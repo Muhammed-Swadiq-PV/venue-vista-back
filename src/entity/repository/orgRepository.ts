@@ -17,6 +17,10 @@ export interface OrgRepository {
     //for admin related tasks
     getAllOrganizers(): Promise<OrgEntity[]>;
     manageOrganizer(id: string, updateData: Partial<OrgEntity>): Promise<OrgEntity | null>;
+    getPendingOrganizers(): Promise<OrgEntity[]>;
+    getPendingOrganizerWithId(id: string): Promise<OrgEntity | null>;
+    approveOrganizer(id: string): Promise<OrgEntity | null>;
+    disApproveOrganizer(id: string): Promise<OrgEntity | null>;
     //for user related tasks
     getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null>;
 

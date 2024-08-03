@@ -3,19 +3,20 @@ import { UserEntity } from '../../entity/models/UserEntity';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import { ObjectId } from 'mongodb';
+import UserModel from '../../entity/models/userModel';
 
-const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  otp: { type: String },
-  isVerified: { type: Boolean, default: false },
-  isGoogle:{type:Boolean, default: false},
-  isBlocked:{type:Boolean, default: false}
-});
+// const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
+//   name: { type: String, required: true },
+//   email: { type: String, required: true, unique: true },
+//   password: { type: String, required: true },
+//   otp: { type: String },
+//   isVerified: { type: Boolean, default: false },
+//   isGoogle:{type:Boolean, default: false},
+//   isBlocked:{type:Boolean, default: false}
+// }, { timestamps: true });
 
 
-const UserModel: Model<UserEntity & Document> = mongoose.model('User', userSchema);
+// const UserModel: Model<UserEntity & Document> = mongoose.model('User', userSchema);
 
 
 export class MongoDBUserRepository implements UserRepository {
@@ -107,11 +108,10 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
 
   async getAllUsers(): Promise<UserEntity[]> {
     try {
-      // console.log('request coming inside userRepository');
       const users = await UserModel.find().exec();
       return users.map(user => user.toObject());
     } catch (error) {
-      // console.error('Error fetching users:', error);
+      console.error('Error fetching users:', error);
       throw new Error('Failed to fetch users');
     }
   }
@@ -120,7 +120,6 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
     try {
       const userId = new ObjectId(id);
       const user = await UserModel.findById(userId).exec();
-      console.log(user, 'user before blocking')
   
       if (!user) {
         throw new Error('User not found');

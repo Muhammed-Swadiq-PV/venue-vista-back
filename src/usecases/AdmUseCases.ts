@@ -81,4 +81,41 @@ export class AdmUseCases {
             throw new Error ('Failed to update organizer status');
         }
     }
+
+    async fetchPendingOrganizers(): Promise<any[]> {
+        try{
+            const organizers = await this.orgRepository.getPendingOrganizers();
+            return organizers;
+        }catch(erorr){
+            throw new Error('Failed to fetch organizers');
+        }
+    }
+
+    async fetchPendingOrganizerWithId(id: string): Promise<OrgEntity | null> {
+        try {
+          const organizer = await this.orgRepository.getPendingOrganizerWithId(id);
+          return organizer;
+        } catch (error : any) {
+          throw new Error('Error fetching organizer: ' + error.message);
+        }
+      }
+
+    async approveOrganizer(id: string): Promise<OrgEntity | null> {
+        try {
+            const organizer = await this.orgRepository.approveOrganizer(id);
+            return organizer;
+        } catch (error: any) {
+            throw new Error('Error approving organizer:' + error.message);
+            
+        }
+    }
+
+    async disApproveOrganizer(id: string): Promise<OrgEntity | null> {
+        try {
+            const organizer = await this.orgRepository.disApproveOrganizer(id);
+            return organizer;
+        } catch (error: any) {
+            throw new Error('Error disapproving organizer:' + error.message);
+        }
+    }
 }
