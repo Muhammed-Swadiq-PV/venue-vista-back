@@ -160,4 +160,11 @@
 
   }
 
+  async checkPostData(organizerId: string): Promise<boolean> {
+    const post = await this.orgRepository.findOrganizerbyPost(organizerId);
+   const result =  post && post.main && post.parking && post.indoor && post.stage && post.dining ? true : false;
+   console.log(result, 'result in controller')
+   return result;
+  }
+
 }

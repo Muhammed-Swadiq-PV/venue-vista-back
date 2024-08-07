@@ -23,7 +23,6 @@ export const authenticateJWT = async (req: CustomJwtRequest, res: Response, next
     try {
       // Verify the token
       const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
-      console.log(decodedToken)
       
       // Ensure the token includes user information
       if (!decodedToken || typeof decodedToken !== 'object' || !decodedToken.id || !decodedToken.role) {
@@ -32,8 +31,6 @@ export const authenticateJWT = async (req: CustomJwtRequest, res: Response, next
       }
 
       req.user = { id: decodedToken.id, role: decodedToken.role };
-
-      console.log('User role:', req.user.role);
 
       // Skip blocked status check for admins
       if (req.user.role === 'admin') {

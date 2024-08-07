@@ -11,29 +11,6 @@ import bcryptjs from 'bcryptjs';
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 
 
-// const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
-//   name: { type: String, required: true },
-//   email: { type: String, required: true, unique: true },
-//   password: { type: String, required: true },
-//   otp: { type: String },
-//   isVerified: { type: Boolean, default: false },
-//   isGoogle: { type: Boolean, default: false },
-//   isBlocked: { type: Boolean, default: false },
-//   eventHallName: { type: String },
-//   phoneNumber: { type: String },
-//   district: { type: String },
-//   city: { type: String },
-//   buildingFloor: { type: String },
-//   pincode: { type: String },
-//   ownerIdCardUrl: { type: Schema.Types.Mixed },
-//   eventHallLicenseUrl: { type: Schema.Types.Mixed },
-//   isProfileVerified: { type: Boolean, default: false },
-//   isProfileApproved: { type: Boolean, default: false },
-//   isProfileUpdated: { type: Boolean, default: false }
-// }, { timestamps: true });
-
-
-// const OrgModel: Model<OrgEntity & Document> = mongoose.model('Organizer', organizerSchema);
 
 export class MongoDBOrgRepository implements OrgRepository {
 
@@ -369,6 +346,94 @@ export class MongoDBOrgRepository implements OrgRepository {
       throw new Error('Failed to fetch main event halls with organizer details');
     }
   }
+
+
+  async getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
+    try {
+      const result = await OrgPostModel.aggregate([
+        {
+          $match: { _id: new mongoose.Types.ObjectId(hallId) }
+        },
+        {
+          $lookup: {
+            from: 'organizers',
+            localField: 'organizerId',
+            foreignField: '_id',
+            as: 'organizerDetails'
+          }
+        },
+        {
+          $unwind: {
+            path: '$organizerDetails',
+            preserveNullAndEmptyArrays: false
+          }
+        },
+        {
+          $match: {
+            'organizerDetails.isProfileApproved': true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            organizerId: 1,
+            main: 1,
+            parking: 1,
+            indoor: 1,
+            stage: 1,
+            dining: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            'organizerDetails._id': 1,
+            'organizerDetails.name': 1,
+            'organizerDetails.email': 1,
+            'organizerDetails.phoneNumber': 1,
+            'organizerDetails.buildingFloor': 1,
+            'organizerDetails.city': 1,
+            'organizerDetails.district': 1
+          }
+        }
+      ]).exec();
+
+      if (result.length === 0) {
+        return null;
+      }
+
+      const eventHallsWithOrganizerDetails: EventHallWithOrganizerDetails = {
+        eventHalls: result.map(item => ({
+          _id: item._id,
+          organizerId: item.organizerId,
+          main: item.main,
+          parking: item.parking,
+          indoor: item.indoor,
+          stage: item.stage,
+          dining: item.dining,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt
+        })),
+        organizers: result.map(item => ({
+          _id: item.organizerDetails._id,
+          name: item.organizerDetails.name,
+          email: item.organizerDetails.email,
+          phoneNumber: item.organizerDetails.phoneNumber,
+          buildingFloor: item.organizerDetails.buildingFloor,
+          city: item.organizerDetails.city,
+          district: item.organizerDetails.district
+        }))
+      };
+
+      return eventHallsWithOrganizerDetails;
+    } catch (error) {
+      console.error('Error fetching hall details with organizer:', error);
+      throw new Error('Failed to fetch hall details with organizer');
+    }
+  }
+
+
+  async findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null> {
+    return OrgPostModel.findOne({ organizerId });
+  }
+
 }
 
 

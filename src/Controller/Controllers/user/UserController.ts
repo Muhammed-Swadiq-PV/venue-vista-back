@@ -182,14 +182,14 @@ export class UserController {
 
   mainEventHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log('checking for data')
+      // console.log('checking for data')
       const details: EventHallWithOrganizerDetails | null = await this.userUseCases.fetchHallWithOrganizerDetails();
       
       if (!details) {
         res.status(404).json({ message: 'Event hall details not found' });
         return; // Ensure method exits after sending response
       }
-      console.log(details)
+      // console.log(details)
       res.status(200).json(details);
     } catch (error: any) {
       console.error('Error fetching hall details:', error);
@@ -198,6 +198,26 @@ export class UserController {
       }
     }
   };
+  
+
+  singleHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const hallId = req.params.id;
+      const details = await this.userUseCases.fetchHallWithOrganizerWithId(hallId);
+      
+      if (!details) {
+        res.status(404).json({ message: 'Event hall details not found' });
+        return;
+      }
+      
+      res.status(200).json(details);
+    } catch (error) {
+      console.error('Error fetching hall details:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Internal server error' });
+      }
+    }
+  }
   
    
   

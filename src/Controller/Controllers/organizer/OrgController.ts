@@ -94,7 +94,7 @@ export class OrgController {
       const organizer = await this.orgUseCases.createGoogleOrganizer({ email, name, password });
 
       // console.log('Organizer created successfully with Google:', organizer);
-      if(!organizer || !organizer.id){
+      if (!organizer || !organizer.id) {
         console.log('not organizer');
         throw new Error('organizer not found');
       }
@@ -121,7 +121,7 @@ export class OrgController {
 
       const organizer = await this.orgUseCases.signInOrganizer(email, password);
       //generating jwt token for organizer who created account normally at signin
-      if(!organizer || !organizer.id){
+      if (!organizer || !organizer.id) {
         throw new Error('organizer not found');
       }
 
@@ -130,7 +130,12 @@ export class OrgController {
       // console.log(refreshToken, 'refresh token in controller')
       await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
-      res.status(200).json({ organizer, accessToken, refreshToken });
+      res.status(200).json({
+        organizerId: organizer.id,
+        organizer,
+        accessToken,
+        refreshToken
+      });
     } catch (error: any) {
       console.error('Error signing in user:', error.message);
       if (error.message === 'Organizer not found' || error.message === 'Invalid password' || error.message === 'Organizer not verified') {
@@ -146,7 +151,7 @@ export class OrgController {
       const { email } = req.body;
       const organizer = await this.orgUseCases.signInGoogle(email);
 
-      if(!organizer || !organizer.id){
+      if (!organizer || !organizer.id) {
         throw new Error('organizer not found');
       }
 
@@ -270,6 +275,17 @@ export class OrgController {
       res.status(201).json(newPost);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
+    }
+  }
+
+  async checkPostData(req: Request, res: Response): Promise<void> {
+    try {
+      const organizerId = req.params.organizerId;
+      const hasPost = await this.orgUseCases.checkPostData(organizerId);
+      res.status(200).json({ hasPost })
+    } catch (error: any) {
+      console.error('Error checking post data', error);
+      res.status(500).json({ error: 'Internal server error' })
     }
   }
 

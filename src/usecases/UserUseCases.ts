@@ -117,4 +117,8 @@ export class UserUseCases {
   async fetchHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null> {
     return await this.orgRepository.getHallWithOrganizerDetails();
   }
+
+  async fetchHallWithOrganizerWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
+    return await this.orgRepository.getPendingOrganizerDetailsWithId(hallId);
+  }
 }

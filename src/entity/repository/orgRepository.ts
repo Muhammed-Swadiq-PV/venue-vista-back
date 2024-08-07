@@ -1,7 +1,8 @@
 // src/entity/repository/orgRepository.ts
 import { OrgEntity } from '../models/OrgEntity';
 import { OrgPostEntity } from '../models/OrgPostEntity';
-import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer'
+import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
+
 
 export interface OrgRepository {
     createOrganizer(organizer: OrgEntity): Promise<OrgEntity>;
@@ -23,5 +24,6 @@ export interface OrgRepository {
     disApproveOrganizer(id: string): Promise<OrgEntity | null>;
     //for user related tasks
     getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null>;
-
+    getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null>;
+    findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null>;
 }
