@@ -4,7 +4,6 @@ import { OrgUseCases } from '../../usecases/OrgUseCases';
 import { MongoDBOrgRepository } from '../../frameworks/repository/MongoDBOrgRepository';
 import { authenticateJWT } from '../middleware/orgJWTmiddle';
 import OrgPostModel from '../../entity/models/OrgPostModel';
-import { auth } from 'firebase-admin';
 import organizerBlock from '../middleware/organizerBlock';
 
 const router = Router();
@@ -17,7 +16,7 @@ const orgController = new OrgController(orgUseCases);
 router.post('/signup', orgController.createOrganizer); //signup through normal signup
 router.post('/verify', orgController.verifyOrganizer); //otp verification
 router.post('/google-auth', orgController.createGoogleOrganizer); //signup through google OAuth
-router.post('/signin',organizerBlock, orgController.signInOrganizer); //signin through email and password
+router.post('/signin', organizerBlock, orgController.signInOrganizer); //signin through email and password
 router.post('/signin-google', orgController.signInGoogle); // signin through google OAuth 
 router.post('/create-profile', authenticateJWT, (req, res, next) => {
   orgController.createProfile(req, res);
@@ -30,6 +29,10 @@ router.post('/create-post', authenticateJWT, (req, res, next) => {
 })//post details about hall
 
 router.get('/post/:organizerId', organizerBlock, (req, res) => orgController.checkPostData(req, res));
+
+router.get('/view-post/:organizerId', organizerBlock, authenticateJWT, (req, res, next) => {
+  orgController.viewPost(req, res);
+})
 
 
 export default router;

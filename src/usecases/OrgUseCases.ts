@@ -1,111 +1,112 @@
-  import { OrgRepository } from '../entity/repository/orgRepository';
-  import { OrgEntity } from '../entity/models/OrgEntity';
-  import { OrgPostEntity } from '../entity/models/OrgPostEntity';
-  import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
-  // import { generateUploadPresignedUrl, generateDownloadPresignedUrl } from '../services/s3Services';
-  import { GetPresignedUrlUseCase } from './GetPresignedUrlUseCases';
-  import mongoose from 'mongoose';
+import { OrgRepository } from '../entity/repository/orgRepository';
+import { OrgEntity } from '../entity/models/OrgEntity';
+import { OrgPostEntity } from '../entity/models/OrgPostEntity';
+import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
+import { GetPresignedUrlUseCase } from './GetPresignedUrlUseCases';
+import mongoose from 'mongoose';
+import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer';
+import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
 
-  export class OrgUseCases {
-    private orgRepository: OrgRepository;
-    constructor(orgRepository: OrgRepository) {
-      this.orgRepository = orgRepository;
+export class OrgUseCases {
+  private orgRepository: OrgRepository;
+  constructor(orgRepository: OrgRepository) {
+    this.orgRepository = orgRepository;
+  }
+
+  async createOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
+
+    const existingOrganizer = await this.orgRepository.findOrganizerByEmail(organizer.email);
+
+    if (existingOrganizer && existingOrganizer.isVerified) {
+      throw new Error('Email already exists');
     }
 
-    async createOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
-
-      const existingOrganizer = await this.orgRepository.findOrganizerByEmail(organizer.email);
-
-      if (existingOrganizer && existingOrganizer.isVerified) {
-        throw new Error('Email already exists');
-      }
-
-      if (existingOrganizer && !existingOrganizer.isVerified) {
-        const otp = generateOTP();
-        existingOrganizer.otp = otp;
-        await this.orgRepository.updateOrganizer(existingOrganizer);
-        await sendOtpEmail(existingOrganizer.name, existingOrganizer.email, otp);
-        throw new Error('Organizer already exists but is not verified. OTP has been sent.');
-      }
-
+    if (existingOrganizer && !existingOrganizer.isVerified) {
       const otp = generateOTP();
-      organizer.otp = otp;
-      organizer.isVerified = false;
-      organizer.isGoogle = false;
-
-      const newOrganizer = await this.orgRepository.createOrganizer(organizer);
-      await sendOtpEmail(newOrganizer.name, newOrganizer.email, otp);
-
-      return newOrganizer;
+      existingOrganizer.otp = otp;
+      await this.orgRepository.updateOrganizer(existingOrganizer);
+      await sendOtpEmail(existingOrganizer.name, existingOrganizer.email, otp);
+      throw new Error('Organizer already exists but is not verified. OTP has been sent.');
     }
 
-    async verifyOrganizer(email: string, otp: string): Promise<OrgEntity> {
-      const organizer = await this.orgRepository.findOrganizerByEmail(email);
-      if (!organizer) {
-        throw new Error('User not found');
-      }
+    const otp = generateOTP();
+    organizer.otp = otp;
+    organizer.isVerified = false;
+    organizer.isGoogle = false;
 
-      if (organizer.otp !== otp) {
-        throw new Error('Invalid OTP');
-      }
+    const newOrganizer = await this.orgRepository.createOrganizer(organizer);
+    await sendOtpEmail(newOrganizer.name, newOrganizer.email, otp);
 
-      organizer.isVerified = true;
-      organizer.otp = undefined; // Clear OTP after successful verification
+    return newOrganizer;
+  }
 
-      const updatedOrganizer = await this.orgRepository.updateOrganizerByEmail(email, {
-        isVerified: organizer.isVerified,
-        otp: organizer.otp
-      });
-
-      if (!updatedOrganizer) {
-        throw new Error('Failed to update organizer');
-      }
-
-      return updatedOrganizer;
+  async verifyOrganizer(email: string, otp: string): Promise<OrgEntity> {
+    const organizer = await this.orgRepository.findOrganizerByEmail(email);
+    if (!organizer) {
+      throw new Error('User not found');
     }
 
-    async createGoogleOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
-      organizer.isVerified = true;
-      organizer.isGoogle = true;
-
-      return this.orgRepository.createOrganizer(organizer);
+    if (organizer.otp !== otp) {
+      throw new Error('Invalid OTP');
     }
 
-    async signInOrganizer(email: string, password: string): Promise<OrgEntity | null> {
-      const organizer = await this.orgRepository.findOrganizerByEmail(email);
-      if (!organizer) {
-        throw new Error('Organizer not found');
-      }
+    organizer.isVerified = true;
+    organizer.otp = undefined; // Clear OTP after successful verification
 
-      if (!organizer.isVerified) {
-        throw new Error('Organizer not verified');
-      }
+    const updatedOrganizer = await this.orgRepository.updateOrganizerByEmail(email, {
+      isVerified: organizer.isVerified,
+      otp: organizer.otp
+    });
 
-      const isPasswordValid = await this.orgRepository.validatePassword(email, password);
-      if (!isPasswordValid) {
-        throw new Error('Invalid password');
-      }
-      //making otp and password empty strings in jwt
-      if(organizer){
-        organizer.password = '';
-        organizer.otp = '' ;
-      }
-      return organizer;
+    if (!updatedOrganizer) {
+      throw new Error('Failed to update organizer');
     }
 
-    async signInGoogle(email: string): Promise<OrgEntity | null> {
-      const organizer = await this.orgRepository.findOrganizerByEmail(email);
-      if (!organizer) {
-        throw new Error('Organizer not found');
-      }
-      if (!organizer.isVerified) {
-        throw new Error('Organizer not verified');
-      }
-      if (!organizer.isGoogle) {
-        throw new Error('Organizer not signed up with Google auth');
-      }
-      return organizer;
+    return updatedOrganizer;
+  }
+
+  async createGoogleOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
+    organizer.isVerified = true;
+    organizer.isGoogle = true;
+
+    return this.orgRepository.createOrganizer(organizer);
+  }
+
+  async signInOrganizer(email: string, password: string): Promise<OrgEntity | null> {
+    const organizer = await this.orgRepository.findOrganizerByEmail(email);
+    if (!organizer) {
+      throw new Error('Organizer not found');
     }
+
+    if (!organizer.isVerified) {
+      throw new Error('Organizer not verified');
+    }
+
+    const isPasswordValid = await this.orgRepository.validatePassword(email, password);
+    if (!isPasswordValid) {
+      throw new Error('Invalid password');
+    }
+    //making otp and password empty strings in jwt
+    if (organizer) {
+      organizer.password = '';
+      organizer.otp = '';
+    }
+    return organizer;
+  }
+
+  async signInGoogle(email: string): Promise<OrgEntity | null> {
+    const organizer = await this.orgRepository.findOrganizerByEmail(email);
+    if (!organizer) {
+      throw new Error('Organizer not found');
+    }
+    if (!organizer.isVerified) {
+      throw new Error('Organizer not verified');
+    }
+    if (!organizer.isGoogle) {
+      throw new Error('Organizer not signed up with Google auth');
+    }
+    return organizer;
+  }
 
 
   async updateProfile(userId: string, profileData: Partial<OrgEntity>): Promise<OrgEntity> {
@@ -162,9 +163,12 @@
 
   async checkPostData(organizerId: string): Promise<boolean> {
     const post = await this.orgRepository.findOrganizerbyPost(organizerId);
-   const result =  post && post.main && post.parking && post.indoor && post.stage && post.dining ? true : false;
-   console.log(result, 'result in controller')
-   return result;
+    const result = post && post.main && post.parking && post.indoor && post.stage && post.dining ? true : false;
+    return result;
+  }
+
+  async getCompletePostDetails(organizerId: string): Promise<EventHallWithOrganizerId | null> {
+    return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
 
 }

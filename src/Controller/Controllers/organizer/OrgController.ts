@@ -1,15 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { OrgUseCases } from '../../../usecases/OrgUseCases';
-import { OrgEntity } from '../../../entity/models/OrgEntity';
 import { CustomRequestWithJwt } from '../../../interfaces/CustomRequestWithJwt';
 import { CustomPostRequestWithJwt } from '../../types/orgPost';
-
+import { isParkingSection, isIndoorSection , isDiningSection } from '../../../utils/typeGuards';
+import { VenueSection, ParkingSection, IndoorSection, DiningSection } from '../../../entity/models/OrgPostEntity'
 import { generateOrgAccessToken } from '../../../utils/tokenUtils';
 import { generateOrgRefreshToken } from '../../../utils/tokenUtils';
 import { saveRefreshToken } from '../../../usecases/RefreshTokenUseCases';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-// import { refreshToken } from 'firebase-admin/app';
 
 dotenv.config();
 
@@ -217,7 +215,7 @@ export class OrgController {
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   async getPresignedUrl(req: Request, res: Response): Promise<void> {
     const { fileName, fileType, operation, expiresIn } = req.query as {
@@ -242,19 +240,22 @@ export class OrgController {
       console.error('Error generating presigned URL:', error);
       res.status(500).json({ error: 'Failed to generate presigned URL' });
     }
-  }
+  };
+
+
+  // In OrgController.ts
+
 
 
   async createPost(req: CustomPostRequestWithJwt, res: Response): Promise<void> {
     try {
-
       if (!req.user || !req.user.id) {
         res.status(401).json({ error: 'unauthorized' });
         return;
       }
-
+  
       const userId = req.user.id;
-
+  
       const {
         main,
         parking,
@@ -262,21 +263,27 @@ export class OrgController {
         stage,
         dining
       } = req.body;
-
+  
+      // Validate sections
+      const validatedParking: ParkingSection | undefined = isParkingSection(parking) ? parking : undefined;
+      const validatedIndoor: IndoorSection | undefined = isIndoorSection(indoor) ? indoor : undefined;
+      const validatedDining: DiningSection | undefined = isDiningSection(dining) ? dining : undefined;
+  
       const postData = {
         main,
-        parking,
-        indoor,
+        parking: validatedParking,
+        indoor: validatedIndoor,
         stage,
-        dining
+        dining: validatedDining
       };
-
+  
       const newPost = await this.orgUseCases.createPost(userId, postData);
       res.status(201).json(newPost);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
+  
 
   async checkPostData(req: Request, res: Response): Promise<void> {
     try {
@@ -286,6 +293,27 @@ export class OrgController {
     } catch (error: any) {
       console.error('Error checking post data', error);
       res.status(500).json({ error: 'Internal server error' })
+    }
+  }
+
+  async viewPost(req: Request, res: Response): Promise<void> {
+    try {
+      const organizerId = req.params.organizerId;
+      const details = await this.orgUseCases.getCompletePostDetails(organizerId);
+
+      console.log(details, 'details coming to post')
+
+      if(!details){
+        res.status(400).json({message: 'Organizer post details doesnt found '});
+        return;
+      }
+
+      res.status(200).json(details);
+    } catch (error) {
+      console.error('Error fetching hall details:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Internal server error' });
+      }
     }
   }
 

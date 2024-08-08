@@ -9,6 +9,7 @@ import OrgModel from '../../entity/models/organizerModel';
 import bcryptjs from 'bcryptjs';
 
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
+import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 
 
 
@@ -348,6 +349,100 @@ export class MongoDBOrgRepository implements OrgRepository {
   }
 
 
+  async getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null> {
+    try {
+      const result = await OrgPostModel.aggregate([
+        {
+          $match: {
+            organizerId: new mongoose.Types.ObjectId(organizerId)
+          }
+        },
+        {
+          $lookup: {
+            from: 'organizers',
+            localField: 'organizerId',
+            foreignField: '_id',
+            as: 'organizerDetails'
+          }
+        },
+        {
+          $unwind: {
+            path: '$organizerDetails',
+            preserveNullAndEmptyArrays: false
+          }
+        },
+        {
+          $match: {
+            'organizerDetails.isProfileApproved': true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            organizerId: 1,
+            main: 1,
+            parking: 1,
+            indoor: 1,
+            stage: 1,
+            dining: 1,
+            carParkingSpace: 1, // Add additional fields
+            bikeParkingSpace: 1, // Add additional fields
+            diningCapacity: 1, // Add additional fields
+            seatingCapacity: 1, // Add additional fields
+            createdAt: 1,
+            updatedAt: 1,
+            'organizerDetails._id': 1,
+            'organizerDetails.name': 1,
+            'organizerDetails.email': 1,
+            'organizerDetails.phoneNumber': 1,
+            'organizerDetails.buildingFloor': 1,
+            'organizerDetails.city': 1,
+            'organizerDetails.district': 1
+          }
+        }
+      ]).exec();
+  
+      if (result.length === 0) {
+        console.log('No data found');
+        return null;
+      }
+  
+      const eventHallsWithOrganizerDetails: EventHallWithOrganizerId = {
+        eventHalls: result.map(item => ({
+          _id: item._id,
+          organizerId: item.organizerId,
+          main: item.main,
+          parking: item.parking,
+          indoor: item.indoor,
+          stage: item.stage,
+          dining: item.dining,
+          carParkingSpace: item.carParkingSpace, // Include additional fields
+          bikeParkingSpace: item.bikeParkingSpace, // Include additional fields
+          diningCapacity: item.diningCapacity, // Include additional fields
+          seatingCapacity: item.seatingCapacity, // Include additional fields
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt
+        })),
+        organizers: result.map(item => ({
+          _id: item.organizerDetails._id,
+          name: item.organizerDetails.name,
+          email: item.organizerDetails.email,
+          phoneNumber: item.organizerDetails.phoneNumber,
+          buildingFloor: item.organizerDetails.buildingFloor,
+          city: item.organizerDetails.city,
+          district: item.organizerDetails.district
+        }))
+      };
+  
+      return eventHallsWithOrganizerDetails;
+    } catch (error) {
+      console.error('Error fetching event halls with organizer details:', error);
+      throw new Error('Failed to fetch event halls with organizer details');
+    }
+  }
+  
+
+
   async getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
     try {
       const result = await OrgPostModel.aggregate([
@@ -394,11 +489,11 @@ export class MongoDBOrgRepository implements OrgRepository {
           }
         }
       ]).exec();
-
+  
       if (result.length === 0) {
         return null;
       }
-
+  
       const eventHallsWithOrganizerDetails: EventHallWithOrganizerDetails = {
         eventHalls: result.map(item => ({
           _id: item._id,
@@ -421,17 +516,17 @@ export class MongoDBOrgRepository implements OrgRepository {
           district: item.organizerDetails.district
         }))
       };
-
+  
       return eventHallsWithOrganizerDetails;
     } catch (error) {
       console.error('Error fetching hall details with organizer:', error);
       throw new Error('Failed to fetch hall details with organizer');
     }
   }
-
+  
 
   async findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null> {
-    return OrgPostModel.findOne({ organizerId });
+    return OrgPostModel.findOne({organizerId})
   }
 
 }

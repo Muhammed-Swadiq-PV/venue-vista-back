@@ -2,6 +2,7 @@
 import { OrgEntity } from '../models/OrgEntity';
 import { OrgPostEntity } from '../models/OrgPostEntity';
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
+import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 
 
 export interface OrgRepository {
@@ -24,6 +25,9 @@ export interface OrgRepository {
     disApproveOrganizer(id: string): Promise<OrgEntity | null>;
     //for user related tasks
     getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null>;
+
+    getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId| null>;
+
     getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null>;
     findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null>;
 }

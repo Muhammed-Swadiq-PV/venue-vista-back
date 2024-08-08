@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import UserModel from '../../entity/models/userModel'; 
+import UserModel from '../../entity/models/userModel';
 import OrgModel from '../../entity/models/organizerModel';
 
 dotenv.config();
@@ -9,7 +9,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret';
 
 export interface CustomJwtRequest extends Request {
-  user?: { id: string; role: string; [key: string]: any };
+  user?: { id: string; role: string;[key: string]: any };
 }
 
 export const authenticateJWT = async (req: CustomJwtRequest, res: Response, next: NextFunction): Promise<void> => {
@@ -23,7 +23,7 @@ export const authenticateJWT = async (req: CustomJwtRequest, res: Response, next
     try {
       // Verify the token
       const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
-      
+
       // Ensure the token includes user information
       if (!decodedToken || typeof decodedToken !== 'object' || !decodedToken.id || !decodedToken.role) {
         res.status(400).json({ message: 'Invalid token structure' });
