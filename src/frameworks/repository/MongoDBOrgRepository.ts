@@ -534,6 +534,48 @@ export class MongoDBOrgRepository implements OrgRepository {
     return OrgPostModel.findOne({organizerId})
   }
 
+  async updatePostDetails(organizerId: string, section: string, data: any): Promise<any> {
+    try {
+      // Find the document to update
+      const post = await this.postModel.findOne({ organizerId });
+
+      if (!post) {
+          throw new Error('Post not found');
+      }
+
+      // Update the specific section of the post
+      switch (section.toLowerCase()) {
+          case 'dining':
+              post.dining = { ...post.dining, ...data };
+              break;
+
+          case 'indoor':
+              post.indoor = { ...post.indoor, ...data };
+              break;
+
+          case 'parking':
+              post.parking = { ...post.parking, ...data };
+              break;
+
+          case 'stage':
+              post.stage = { ...post.stage, ...data };
+              break;
+
+          default:
+              throw new Error('Unknown section');
+      }
+
+      // Save the updated post
+      await post.save();
+
+      // Return the updated post
+      return post;
+  } catch (error) {
+      console.error('Error updating post in repository:', error);
+      throw new Error('Error updating post');
+  }
+  }
+
 }
 
 

@@ -225,6 +225,10 @@ export class OrgController {
       expiresIn?: string;
     };
 
+    if (!fileName || !fileType || !operation) {
+      res.status(400).json({ error: 'File name, file type, and operation must be provided' });
+      return;
+  }
     // URL-decode fileType 
     const decodedFileType = decodeURIComponent(fileType);
 
@@ -296,6 +300,7 @@ export class OrgController {
     }
   }
 
+  // view post details getting 
   async viewPost(req: Request, res: Response): Promise<void> {
     try {
       const organizerId = req.params.organizerId;
@@ -314,6 +319,26 @@ export class OrgController {
       if (!res.headersSent) {
         res.status(500).json({ message: 'Internal server error' });
       }
+    }
+  }
+
+  async editPost(req: Request, res: Response): Promise<void> {
+    try {
+      const { organizerId } = req.params;
+      const { section, data } = req.body;
+  
+      // Log the data to check what is being received
+      console.log('Organizer ID:', organizerId);
+      console.log('Section:', section);
+      console.log('Data:', data);
+  
+      const result = await this.orgUseCases.updatePostDetails(organizerId, section, data);
+  
+      // Send a response back
+      res.status(200).json({ message: 'Update successful' });
+    } catch (err) {
+      console.error('Error updating event hall:', err);
+      res.status(500).json({ message: 'Internal server error' });
     }
   }
 

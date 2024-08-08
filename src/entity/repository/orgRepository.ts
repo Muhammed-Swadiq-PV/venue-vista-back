@@ -32,4 +32,6 @@ export interface OrgRepository {
 
     getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null>;
     findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null>;
+
+    updatePostDetails(organizerId: string, section: string, data: any): Promise<any>
 }

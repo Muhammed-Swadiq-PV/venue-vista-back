@@ -172,4 +172,18 @@ export class OrgUseCases {
     return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
 
+  async updatePostDetails(organizerId: string, section: string, data: any): Promise<any>{
+    if (!organizerId || !section || !data) {
+      throw new Error('Invalid input parameters');
+  }
+
+  console.log('Update Post Details - Organizer ID:', organizerId);
+    console.log('Section:', section);
+    console.log('Data:', data);
+
+    const result = await this.orgRepository.updatePostDetails(organizerId, section, data);
+
+    return result;
+  }
+
 }

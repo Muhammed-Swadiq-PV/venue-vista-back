@@ -34,5 +34,9 @@ router.get('/view-post/:organizerId', organizerBlock, authenticateJWT, (req, res
   orgController.viewPost(req, res);
 })
 
+router.patch('/update-post/:organizerId', organizerBlock, authenticateJWT, (req, res, next)=> {
+  orgController.editPost(req, res).catch(next);
+})
+
 
 export default router;
