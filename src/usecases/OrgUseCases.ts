@@ -168,6 +168,7 @@ export class OrgUseCases {
   }
 
   async getCompletePostDetails(organizerId: string): Promise<EventHallWithOrganizerId | null> {
+    console.log(organizerId, 'organizerid')
     return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
 

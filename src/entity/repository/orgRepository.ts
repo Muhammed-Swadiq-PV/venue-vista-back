@@ -26,6 +26,8 @@ export interface OrgRepository {
     //for user related tasks
     getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null>;
 
+
+    getOrganizerIdfrompostId(hallId:string):Promise<string | null>;
     getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId| null>;
 
     getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null>;

@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb';
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import OrgModel from '../../entity/models/organizerModel';
 import bcryptjs from 'bcryptjs';
-
+import { Types } from 'mongoose';
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 
@@ -265,6 +265,11 @@ export class MongoDBOrgRepository implements OrgRepository {
     const newPost = new OrgPostModel(post);
     const savedPost = await newPost.save();
     return savedPost.toObject();
+  }
+
+  async getOrganizerIdfrompostId(hallId: string):Promise<string | null> {
+    const post = await OrgPostModel.findById(hallId).select('organizerId').lean();
+    return post ?( post.organizerId as Types.ObjectId).toString() : null;
   }
 
   // user related get task 

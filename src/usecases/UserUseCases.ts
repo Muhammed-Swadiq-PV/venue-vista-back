@@ -3,6 +3,7 @@ import { OrgRepository } from '../entity/repository/orgRepository';
 import { UserEntity } from '../entity/models/UserEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 import {EventHallWithOrganizerDetails} from '../interfaces/eventHallwithOrganizer'
+import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
 
 export class UserUseCases {
   private userRepository: UserRepository;
@@ -118,7 +119,15 @@ export class UserUseCases {
     return await this.orgRepository.getHallWithOrganizerDetails();
   }
 
-  async fetchHallWithOrganizerWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
-    return await this.orgRepository.getPendingOrganizerDetailsWithId(hallId);
+  async fetchHallWithOrganizerWithId(hallId: string): Promise<EventHallWithOrganizerId | null> {
+     
+    const organizerId = await this.orgRepository.getOrganizerIdfrompostId(hallId);
+
+    if(!organizerId){
+      console.log('No organizer id for the post id');
+      return null;
+    }
+
+    return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
 }
