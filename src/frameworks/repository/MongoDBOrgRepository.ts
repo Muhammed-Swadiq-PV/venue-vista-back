@@ -158,6 +158,12 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
+  async findProfileById(organizerId: string): Promise<OrgEntity | null> {
+    const organizerProfile = await this.orgModel.findOne({ _id: organizerId });
+    console.log(organizerProfile, 'organizer profile')
+    return organizerProfile ? organizerProfile.toObject() : null;
+  };
+
 
   // get all organizers to show for admin
   async getAllOrganizers(): Promise<OrgEntity[]> {

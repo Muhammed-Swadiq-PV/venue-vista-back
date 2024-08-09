@@ -14,6 +14,8 @@ export interface OrgRepository {
     updateProfile(userId: string, profileData: Partial<OrgEntity>): Promise<void>;
     updateOrganizerByEmail(email: string, profileData: Partial<OrgEntity>): Promise<OrgEntity | null>;
 
+    findProfileById(organizerId: string): Promise<OrgEntity | null>;
+
     // Post-related methods
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;
     //for admin related tasks

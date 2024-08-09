@@ -217,6 +217,29 @@ export class OrgController {
     }
   };
 
+
+  async viewProfile(req: Request, res: Response): Promise<void> {
+  try{
+    console.log('reached insude controller')
+    const organizerId = req.params.organizerId;
+    console.log(organizerId, 'organizer id')
+    const details = await this.orgUseCases.viewProfile(organizerId);
+
+    if(!details){
+      res.status(400).json({message: 'organizer profile not found'});
+      return;
+    }
+
+    res.status(200).json(details);
+  } catch(error) {
+    console.error('Error fetching organizer data:', error);
+    if(!res.headersSent){
+      res.status(500).json({message: 'Internal server error'});
+    }
+  }
+  }
+
+
   async getPresignedUrl(req: Request, res: Response): Promise<void> {
     const { fileName, fileType, operation, expiresIn } = req.query as {
       fileName: string;
@@ -245,9 +268,6 @@ export class OrgController {
       res.status(500).json({ error: 'Failed to generate presigned URL' });
     }
   };
-
-
-  // In OrgController.ts
 
 
 
@@ -305,8 +325,6 @@ export class OrgController {
     try {
       const organizerId = req.params.organizerId;
       const details = await this.orgUseCases.getCompletePostDetails(organizerId);
-
-      console.log(details, 'details coming to post')
 
       if(!details){
         res.status(400).json({message: 'Organizer post details doesnt found '});

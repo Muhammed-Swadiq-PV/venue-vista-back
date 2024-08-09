@@ -127,6 +127,13 @@ export class OrgUseCases {
     return savedOrganizer;
   }
 
+
+  async viewProfile(organizerId: string) : Promise<OrgEntity | null> {
+    const organizerProfile = await this.orgRepository.findProfileById(organizerId);
+    console.log(organizerProfile, 'organizer profile in use case')
+    return organizerProfile;
+  }
+
   //generating presigned url for s3 bucket
 
   async getPresignedUrl(fileName: string, fileType: string, operation: 'upload' | 'download', expiresIn?: number): Promise<string> {

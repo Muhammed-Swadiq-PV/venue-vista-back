@@ -22,6 +22,8 @@ router.post('/create-profile', authenticateJWT, (req, res, next) => {
   orgController.createProfile(req, res);
 });//for updating profile also checking middleware
 
+router.get('/profile/:organizerId', organizerBlock , orgController.viewProfile.bind(orgController));
+
 router.get('/presigned-url', orgController.getPresignedUrl.bind(orgController));
 
 router.post('/create-post', authenticateJWT, (req, res, next) => {
@@ -34,7 +36,7 @@ router.get('/view-post/:organizerId', organizerBlock, authenticateJWT, (req, res
   orgController.viewPost(req, res);
 })
 
-router.patch('/update-post/:organizerId', organizerBlock, authenticateJWT, (req, res, next)=> {
+router.patch('/update-post/:organizerId', organizerBlock, authenticateJWT, (req, res, next) => {
   orgController.editPost(req, res).catch(next);
 })
 
