@@ -8,7 +8,12 @@ const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
     otp: { type: String },
     isVerified: { type: Boolean, default: false },
     isGoogle: { type: Boolean, default: false },
-    isBlocked: { type: Boolean, default: false }
+    isBlocked: { type: Boolean, default: false },
+    address: {type: String},
+    city: {type:String},
+    pin: {type:String},
+    district: {type:String},
+    mobileNumber: {type:String},
 }, { timestamps: true });
 
 

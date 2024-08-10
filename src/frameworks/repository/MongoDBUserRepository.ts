@@ -5,18 +5,7 @@ import bcryptjs from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import UserModel from '../../entity/models/userModel';
 
-// const userSchema: Schema<UserEntity & Document> = new mongoose.Schema({
-//   name: { type: String, required: true },
-//   email: { type: String, required: true, unique: true },
-//   password: { type: String, required: true },
-//   otp: { type: String },
-//   isVerified: { type: Boolean, default: false },
-//   isGoogle:{type:Boolean, default: false},
-//   isBlocked:{type:Boolean, default: false}
-// }, { timestamps: true });
 
-
-// const UserModel: Model<UserEntity & Document> = mongoose.model('User', userSchema);
 
 
 export class MongoDBUserRepository implements UserRepository {
@@ -106,13 +95,21 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
     return updatedUser.toObject();
   }
 
-  async getAllUsers(): Promise<UserEntity[]> {
+  async getAllUsers(page: number, limit: number): Promise<{ users: UserEntity[] , totalPages: number }> {
     try {
-      const users = await UserModel.find().exec();
-      return users.map(user => user.toObject());
+      const skip = (page - 1)* limit;
+      const [users, totalCount] = await Promise.all([
+        UserModel.find().skip(skip).limit(limit).exec(),
+        UserModel.countDocuments().exec()
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+      return{
+        users: users.map(user => user.toObject()),
+        totalPages
+      };
     } catch (error) {
-      console.error('Error fetching users:', error);
-      throw new Error('Failed to fetch users');
+      throw new Error('Error fetching user');
     }
   }
 
@@ -145,5 +142,29 @@ async saveUser(user: UserEntity): Promise<UserEntity> {
       throw new Error('Failed to update user');
     }
   }
+
+  // get profile details id changing to ObjectId
+ async getProfile(userId: string): Promise<UserEntity | null> {
+  try {
+    const objectId = new mongoose.Types.ObjectId(userId);
+    const profile = await UserModel.findById(objectId);
+    // console.log(profile, 'profile in repository');
+
+    return profile;
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    return null;
+  }
+ }
+
+ async updateUserProfile(userId: string, profileData: Partial<UserEntity>): Promise<UserEntity | null> {
+  try {
+      const updatedUser = await UserModel.findByIdAndUpdate(userId, profileData, { new: true });
+      return updatedUser ? updatedUser.toObject() : null;
+  } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw new Error('Could not update user profile');
+  }
+}
   
 }

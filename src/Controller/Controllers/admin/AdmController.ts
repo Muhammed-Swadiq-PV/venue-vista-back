@@ -46,9 +46,11 @@ export class AdmController {
 
     async fetchUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            // console.log('request coming in controller');
-            const users = await this.admUseCases.fetchUsers();
-            res.status(200).json(users);
+            const page = parseInt(req.query.page as string, 10) || 1;
+            const limit = parseInt(req.query.limit as string, 10) || 10;
+
+            const { users, totalPages } = await this.admUseCases.fetchUsers(page, limit);
+            res.status(200).json({ users, totalPages });
         } catch (error: any) {
             console.error('Error fetching users:', error.message);
             res.status(500).json({ error: 'Failed to fetch users' });
@@ -76,8 +78,11 @@ export class AdmController {
 
     async fetchOrganizers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const users = await this.admUseCases.fetchOrganizers();
-            res.status(200).json(users);
+            const page = parseInt(req.query.page as string, 10) || 1;
+            const limit = parseInt(req.query.limit as string, 10) || 10;
+
+            const result = await this.admUseCases.fetchOrganizers(page, limit);
+            res.status(200).json(result);
         } catch (error: any) {
             res.status(500).json({ error: 'failed to fetch organizers' });
         }
@@ -140,14 +145,14 @@ export class AdmController {
         const { id } = req.params;
         try {
             const organizer = await this.admUseCases.disApproveOrganizer(id);
-            if(organizer) {
+            if (organizer) {
                 res.json(organizer);
             } else {
                 res.status(404).json({ message: 'Organizer not found' });
             }
         } catch (error) {
             res.status(500).json({ message: 'internal server error', error });
-            
+
         }
     }
 

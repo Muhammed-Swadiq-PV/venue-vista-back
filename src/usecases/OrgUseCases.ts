@@ -121,16 +121,14 @@ export class OrgUseCases {
       ...profileData,
     };
 
-
     const savedOrganizer = await this.orgRepository.updateOrganizer(updatedOrganizer);
 
     return savedOrganizer;
   }
 
-
   async viewProfile(organizerId: string) : Promise<OrgEntity | null> {
     const organizerProfile = await this.orgRepository.findProfileById(organizerId);
-    console.log(organizerProfile, 'organizer profile in use case')
+    // console.log(organizerProfile, 'organizer profile in use case')
     return organizerProfile;
   }
 
@@ -175,7 +173,6 @@ export class OrgUseCases {
   }
 
   async getCompletePostDetails(organizerId: string): Promise<EventHallWithOrganizerId | null> {
-    console.log(organizerId, 'organizerid')
     return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
 
@@ -183,10 +180,6 @@ export class OrgUseCases {
     if (!organizerId || !section || !data) {
       throw new Error('Invalid input parameters');
   }
-
-  console.log('Update Post Details - Organizer ID:', organizerId);
-    console.log('Section:', section);
-    console.log('Data:', data);
 
     const result = await this.orgRepository.updatePostDetails(organizerId, section, data);
 

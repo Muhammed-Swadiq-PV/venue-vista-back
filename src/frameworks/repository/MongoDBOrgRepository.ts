@@ -69,9 +69,6 @@ export class MongoDBOrgRepository implements OrgRepository {
     return savedOrganizer.toObject();
   }
 
-
-
-
   async findOrganizerByEmail(email: string): Promise<OrgEntity | null> {
     return await OrgModel.findOne({ email }).exec();
   }
@@ -96,12 +93,10 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async updateProfile(id: string, profileData: Partial<OrgEntity>): Promise<void> {
     try {
-      // console.log(id, profileData, 'inside mongodborg repository when updating profile');
       const result = await OrgModel.findByIdAndUpdate(id, profileData, { new: true }).exec();
       if (!result) {
         throw new Error('Document not found or not updated');
       }
-      // console.log('Update successful:', result);
     } catch (error: any) {
       console.error('Update failed:', error);
     }
@@ -117,7 +112,6 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async updateOrganizer(organizer: Partial<OrgEntity> & { _doc?: any }): Promise<OrgEntity> {
     try {
-      // console.log('Updating organizer:', JSON.stringify(organizer, null, 2));
 
       // Extract the _id from _doc if it exists, otherwise use the id property
       const organizerId = organizer._doc?._id || organizer.id;
@@ -160,19 +154,24 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async findProfileById(organizerId: string): Promise<OrgEntity | null> {
     const organizerProfile = await this.orgModel.findOne({ _id: organizerId });
-    console.log(organizerProfile, 'organizer profile')
     return organizerProfile ? organizerProfile.toObject() : null;
   };
 
-
-  // get all organizers to show for admin
-  async getAllOrganizers(): Promise<OrgEntity[]> {
+  async fetchOrganizers(page: number, limit: number): Promise<{ organizers: OrgEntity[], totalPages: number }> {
     try {
-      const users = await OrgModel.find().exec();
-      return users.map(user => user.toObject());
+      const skip = (page - 1) * limit;
+      const [organizers, totalCount] = await Promise.all([
+        this.orgModel.find().skip(skip).limit(limit).exec(),
+        this.orgModel.countDocuments().exec()
+      ]);
 
+      const totalPages = Math.ceil(totalCount / limit);
+      return {
+        organizers: organizers.map(user => user.toObject()),
+        totalPages
+      };
     } catch (error) {
-      throw new Error('Failed to fetch organizer');
+      throw new Error('Failed to fetch organizers');
     }
   }
 
@@ -180,7 +179,6 @@ export class MongoDBOrgRepository implements OrgRepository {
     try {
       const userId = new ObjectId(id);
       const organizer = await OrgModel.findById(userId).exec();
-      // console.log(organizer , 'organizer before blocking');
 
       if (!organizer) {
         throw new Error('organizer not found');
@@ -204,7 +202,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
-  // getting details for admin notifiation 
+  // getting details for admin notification 
   async getPendingOrganizers(): Promise<OrgEntity[]> {
     try {
       const organizers = await OrgModel.find({
@@ -273,9 +271,9 @@ export class MongoDBOrgRepository implements OrgRepository {
     return savedPost.toObject();
   }
 
-  async getOrganizerIdfrompostId(hallId: string):Promise<string | null> {
+  async getOrganizerIdfrompostId(hallId: string): Promise<string | null> {
     const post = await OrgPostModel.findById(hallId).select('organizerId').lean();
-    return post ?( post.organizerId as Types.ObjectId).toString() : null;
+    return post ? (post.organizerId as Types.ObjectId).toString() : null;
   }
 
   // user related get task 
@@ -412,12 +410,12 @@ export class MongoDBOrgRepository implements OrgRepository {
           }
         }
       ]).exec();
-  
+
       if (result.length === 0) {
         console.log('No data found');
         return null;
       }
-  
+
       const eventHallsWithOrganizerDetails: EventHallWithOrganizerId = {
         eventHalls: result.map(item => ({
           _id: item._id,
@@ -444,14 +442,14 @@ export class MongoDBOrgRepository implements OrgRepository {
           district: item.organizerDetails.district
         }))
       };
-  
+
       return eventHallsWithOrganizerDetails;
     } catch (error) {
       console.error('Error fetching event halls with organizer details:', error);
       throw new Error('Failed to fetch event halls with organizer details');
     }
   }
-  
+
 
 
   async getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
@@ -500,11 +498,11 @@ export class MongoDBOrgRepository implements OrgRepository {
           }
         }
       ]).exec();
-  
+
       if (result.length === 0) {
         return null;
       }
-  
+
       const eventHallsWithOrganizerDetails: EventHallWithOrganizerDetails = {
         eventHalls: result.map(item => ({
           _id: item._id,
@@ -527,17 +525,17 @@ export class MongoDBOrgRepository implements OrgRepository {
           district: item.organizerDetails.district
         }))
       };
-  
+
       return eventHallsWithOrganizerDetails;
     } catch (error) {
       console.error('Error fetching hall details with organizer:', error);
       throw new Error('Failed to fetch hall details with organizer');
     }
   }
-  
+
 
   async findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null> {
-    return OrgPostModel.findOne({organizerId})
+    return OrgPostModel.findOne({ organizerId })
   }
 
   async updatePostDetails(organizerId: string, section: string, data: any): Promise<any> {
@@ -546,29 +544,29 @@ export class MongoDBOrgRepository implements OrgRepository {
       const post = await this.postModel.findOne({ organizerId });
 
       if (!post) {
-          throw new Error('Post not found');
+        throw new Error('Post not found');
       }
 
       // Update the specific section of the post
       switch (section.toLowerCase()) {
-          case 'dining':
-              post.dining = { ...post.dining, ...data };
-              break;
+        case 'dining':
+          post.dining = { ...post.dining, ...data };
+          break;
 
-          case 'indoor':
-              post.indoor = { ...post.indoor, ...data };
-              break;
+        case 'indoor':
+          post.indoor = { ...post.indoor, ...data };
+          break;
 
-          case 'parking':
-              post.parking = { ...post.parking, ...data };
-              break;
+        case 'parking':
+          post.parking = { ...post.parking, ...data };
+          break;
 
-          case 'stage':
-              post.stage = { ...post.stage, ...data };
-              break;
+        case 'stage':
+          post.stage = { ...post.stage, ...data };
+          break;
 
-          default:
-              throw new Error('Unknown section');
+        default:
+          throw new Error('Unknown section');
       }
 
       // Save the updated post
@@ -576,10 +574,10 @@ export class MongoDBOrgRepository implements OrgRepository {
 
       // Return the updated post
       return post;
-  } catch (error) {
+    } catch (error) {
       console.error('Error updating post in repository:', error);
       throw new Error('Error updating post');
-  }
+    }
   }
 
 }

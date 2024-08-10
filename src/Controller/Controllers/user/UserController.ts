@@ -218,7 +218,39 @@ export class UserController {
       }
     }
   }
-  
-   
+
+   getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.params.userId;
+      const details = await this.userUseCases.getProfile(userId);
+
+      if(!details){
+        res.status(404).json({message: 'user profile details not found'});
+      }
+
+      res.status(200).json(details);
+
+    } catch (error) {
+      console.error('Error fetching user details');
+      res.status(500).json({message: 'Internal server error'});
+    }
+  }
+
+  async postProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const userId = req.params.userId;
+        const profileData = req.body; // This will contain address, city, pin, district, mobileNumber, etc.
+
+        const updatedUser = await this.userUseCases.updateUserProfile(userId, profileData);
+
+        if (updatedUser) {
+            res.status(200).json(updatedUser);
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        next(error);
+    }
+}
   
 }

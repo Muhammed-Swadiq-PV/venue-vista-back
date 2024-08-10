@@ -8,4 +8,9 @@ export interface UserEntity {
     token?: string;
     isGoogle?: boolean;
     isBlocked?: boolean;
+    address?: string;
+    city?: string;
+    pin?: string;
+    district?: string;
+    mobileNumber?: string;
   }

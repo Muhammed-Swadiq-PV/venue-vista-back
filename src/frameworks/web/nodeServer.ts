@@ -16,18 +16,18 @@ const app = express();
 // Initialize MongoDB connection
 const mongoDB = new MongoDB();
 mongoDB.connect()
-.then(() => {
-    // console.log('Connected to MongoDB');
-    startServer(3000); 
-})
-.catch(err => {
-    console.error('Failed to connect to MongoDB:', err);
-});
+    .then(() => {
+        // console.log('Connected to MongoDB');
+        startServer(3000);
+    })
+    .catch(err => {
+        console.error('Failed to connect to MongoDB:', err);
+    });
 
 // Middleware to connect CORS
 app.use(cors({
-    origin:'http://localhost:5173',
-    methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS', 
+    origin: 'http://localhost:5173',
+    methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization, X-Role'
 }));
 
@@ -43,7 +43,7 @@ app.use('/admin', adminRoutes);
 
 // Start server function
 export const startServer = (port: number) => {
-    console.log('starting server on port' , port)
+    console.log('starting server on port', port)
     app.listen(port, () => {
         console.log(`Server running on port http://localhost:${port}`);
     });

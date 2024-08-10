@@ -25,7 +25,6 @@ export class AdmUseCases {
         }
 
         const isPasswordValid = await this.admRepository.validatePassword(email, password);
-        // console.log(isPasswordValid,'is passwordvalid')
         if (!isPasswordValid) {
             throw new Error('Invalid password');
         }
@@ -34,11 +33,9 @@ export class AdmUseCases {
     }
 
     // get user details for view and block or unblock
-    async fetchUsers(): Promise<any[]> {
+    async fetchUsers(page: number, limit: number):  Promise<{ users: UserEntity[], totalPages: number }> {
         try {
-            // console.log('request coming in usecase');
-            const users = await this.userRepository.getAllUsers();
-            // console.log(users, 'users getting from database to usecase');
+            const users = await this.userRepository.getAllUsers(page , limit);
             return users;
         } catch (error) {
             console.error('Error in AdmUseCases:', error);
@@ -60,15 +57,9 @@ export class AdmUseCases {
         }
     }
 
-    async fetchOrganizers(): Promise<any[]> {
-        try{
-            const users = await this.orgRepository.getAllOrganizers();
-       
-            return users;
-        }catch(error){
-            throw new Error('failed to fetch organizers');
-        }
-    }
+    async fetchOrganizers(page: number, limit: number) {
+        return await this.orgRepository.fetchOrganizers(page, limit);
+      }
 
     async blockOrganizer(id: string, isBlocked: boolean): Promise<OrgEntity | null> {
         try {

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { OrgUseCases } from '../../../usecases/OrgUseCases';
 import { CustomRequestWithJwt } from '../../../interfaces/CustomRequestWithJwt';
 import { CustomPostRequestWithJwt } from '../../types/orgPost';
-import { isParkingSection, isIndoorSection , isDiningSection } from '../../../utils/typeGuards';
+import { isParkingSection, isIndoorSection, isDiningSection } from '../../../utils/typeGuards';
 import { VenueSection, ParkingSection, IndoorSection, DiningSection } from '../../../entity/models/OrgPostEntity'
 import { generateOrgAccessToken } from '../../../utils/tokenUtils';
 import { generateOrgRefreshToken } from '../../../utils/tokenUtils';
@@ -26,12 +26,9 @@ export class OrgController {
   // Signup
   createOrganizer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // console.log('Received signup request:', req.body);
 
       const { name, email, password } = req.body;
       const user = await this.orgUseCases.createOrganizer({ name, email, password });
-
-      console.log('organizer created successfully org controller:', user);
 
       res.status(201).json({ message: 'OTP sent to your email. Please verify.', user });
     } catch (error: any) {
@@ -61,7 +58,7 @@ export class OrgController {
 
       await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
-      res.status(200).json({ message: 'signed up successfully with!', organizer, accessToken, refreshToken });
+      res.status(200).json({ message: 'signed up successfully with!', organizerId: organizer.id , organizer, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error verifying user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid OTP') {
@@ -103,7 +100,7 @@ export class OrgController {
 
       await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
-      res.status(200).json({ message: 'signed up successfully with Google!', organizer, accessToken, refreshToken });
+      res.status(200).json({ message: 'signed up successfully with Google!', organizerId: organizer.id , organizer, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Google OAuth error:', error);
       res.status(500).json({ error: 'Failed to sign up with Google. Please try again.' });
@@ -167,7 +164,7 @@ export class OrgController {
       // Save refresh token to database or memory
       await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
-      res.status(200).json({ organizer, accessToken, refreshToken });
+      res.status(200).json({ organizerId: organizer.id ,  organizer, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error signing in organizer:', error.message);
       if (error.message === 'Organizer not found' || error.message === 'Organizer not verified' || error.message === 'Organizer not signed up with Google auth') {
@@ -219,24 +216,22 @@ export class OrgController {
 
 
   async viewProfile(req: Request, res: Response): Promise<void> {
-  try{
-    console.log('reached insude controller')
-    const organizerId = req.params.organizerId;
-    console.log(organizerId, 'organizer id')
-    const details = await this.orgUseCases.viewProfile(organizerId);
+    try {
+      const organizerId = req.params.organizerId;
+      const details = await this.orgUseCases.viewProfile(organizerId);
 
-    if(!details){
-      res.status(400).json({message: 'organizer profile not found'});
-      return;
-    }
+      if (!details) {
+        res.status(400).json({ message: 'organizer profile not found' });
+        return;
+      }
 
-    res.status(200).json(details);
-  } catch(error) {
-    console.error('Error fetching organizer data:', error);
-    if(!res.headersSent){
-      res.status(500).json({message: 'Internal server error'});
+      res.status(200).json(details);
+    } catch (error) {
+      console.error('Error fetching organizer data:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Internal server error' });
+      }
     }
-  }
   }
 
 
@@ -251,7 +246,7 @@ export class OrgController {
     if (!fileName || !fileType || !operation) {
       res.status(400).json({ error: 'File name, file type, and operation must be provided' });
       return;
-  }
+    }
     // URL-decode fileType 
     const decodedFileType = decodeURIComponent(fileType);
 
@@ -277,9 +272,9 @@ export class OrgController {
         res.status(401).json({ error: 'unauthorized' });
         return;
       }
-  
+
       const userId = req.user.id;
-  
+
       const {
         main,
         parking,
@@ -287,12 +282,12 @@ export class OrgController {
         stage,
         dining
       } = req.body;
-  
+
       // Validate sections
       const validatedParking: ParkingSection | undefined = isParkingSection(parking) ? parking : undefined;
       const validatedIndoor: IndoorSection | undefined = isIndoorSection(indoor) ? indoor : undefined;
       const validatedDining: DiningSection | undefined = isDiningSection(dining) ? dining : undefined;
-  
+
       const postData = {
         main,
         parking: validatedParking,
@@ -300,14 +295,14 @@ export class OrgController {
         stage,
         dining: validatedDining
       };
-  
+
       const newPost = await this.orgUseCases.createPost(userId, postData);
       res.status(201).json(newPost);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
-  
+
 
   async checkPostData(req: Request, res: Response): Promise<void> {
     try {
@@ -326,8 +321,8 @@ export class OrgController {
       const organizerId = req.params.organizerId;
       const details = await this.orgUseCases.getCompletePostDetails(organizerId);
 
-      if(!details){
-        res.status(400).json({message: 'Organizer post details doesnt found '});
+      if (!details) {
+        res.status(400).json({ message: 'Organizer post details doesnt found ' });
         return;
       }
 
@@ -344,14 +339,9 @@ export class OrgController {
     try {
       const { organizerId } = req.params;
       const { section, data } = req.body;
-  
-      // Log the data to check what is being received
-      console.log('Organizer ID:', organizerId);
-      console.log('Section:', section);
-      console.log('Data:', data);
-  
+
       const result = await this.orgUseCases.updatePostDetails(organizerId, section, data);
-  
+
       // Send a response back
       res.status(200).json({ message: 'Update successful' });
     } catch (err) {

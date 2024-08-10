@@ -130,4 +130,13 @@ export class UserUseCases {
 
     return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
+
+  async getProfile(userId: string): Promise<UserEntity | null> {
+    return this.userRepository.getProfile(userId);
+  }
+
+  async updateUserProfile(userId: string, profileData: Partial<UserEntity>): Promise<UserEntity | null> {
+    return await this.userRepository.updateUserProfile(userId, profileData);
+}
+
 }

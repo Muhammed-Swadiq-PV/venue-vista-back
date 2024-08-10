@@ -18,8 +18,10 @@ export interface OrgRepository {
 
     // Post-related methods
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;
+
     //for admin related tasks
-    getAllOrganizers(): Promise<OrgEntity[]>;
+    fetchOrganizers(page: number, limit: number): Promise<{ organizers: OrgEntity[], totalPages: number }>
+
     manageOrganizer(id: string, updateData: Partial<OrgEntity>): Promise<OrgEntity | null>;
     getPendingOrganizers(): Promise<OrgEntity[]>;
     getPendingOrganizerWithId(id: string): Promise<OrgEntity | null>;
@@ -29,8 +31,8 @@ export interface OrgRepository {
     getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null>;
 
 
-    getOrganizerIdfrompostId(hallId:string):Promise<string | null>;
-    getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId| null>;
+    getOrganizerIdfrompostId(hallId: string): Promise<string | null>;
+    getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null>;
 
     getPendingOrganizerDetailsWithId(hallId: string): Promise<EventHallWithOrganizerDetails | null>;
     findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null>;
