@@ -42,7 +42,7 @@ export class UserController {
   };
 
 
-   //create user with google auth
+  //create user with google auth
   createGoogleUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email, name } = req.body;
@@ -61,7 +61,7 @@ export class UserController {
 
       const user = await this.userUseCases.createGoogleUser({ email, name, password });
 
-      if(!user || !user.id){
+      if (!user || !user.id) {
         throw new Error('user not found');
       }
 
@@ -107,7 +107,7 @@ export class UserController {
       const { email, otp } = req.body;
       const user = await this.userUseCases.verifyUser(email, otp);
 
-      if(!user || !user.id){
+      if (!user || !user.id) {
         throw new Error('user not found');
       }
 
@@ -116,7 +116,7 @@ export class UserController {
 
       await saveRefreshToken(user.id, refreshToken, 'user');
 
-      res.status(200).json({ message: 'User verified successfully', user , accessToken, refreshToken });
+      res.status(200).json({ message: 'User verified successfully', user, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error verifying user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid OTP') {
@@ -135,7 +135,7 @@ export class UserController {
 
       const user = await this.userUseCases.signInUser(email, password);
 
-      if(!user || !user.id ){
+      if (!user || !user.id) {
         throw new Error('user not found');
       }
 
@@ -144,7 +144,7 @@ export class UserController {
 
       await saveRefreshToken(user.id, refreshToken, 'user');
 
-      res.status(200).json({user , accessToken, refreshToken});
+      res.status(200).json({ user, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error signing in user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid password' || error.message === 'User not verified') {
@@ -160,7 +160,7 @@ export class UserController {
       const { email } = req.body;
       const user = await this.userUseCases.signInGoogle(email);
 
-      if(!user || !user.id ){
+      if (!user || !user.id) {
         throw new Error('user not found');
       }
 
@@ -169,7 +169,7 @@ export class UserController {
 
       await saveRefreshToken(user.id, refreshToken, 'user');
 
-      res.status(200).json({user , accessToken, refreshToken});
+      res.status(200).json({ user, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error signing in user:', error.message);
       if (error.message === 'User not found' || error.message === 'User not verified' || error.message === 'User not signed up with Google auth') {
@@ -182,15 +182,18 @@ export class UserController {
 
   mainEventHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // console.log('checking for data')
-      const details: EventHallWithOrganizerDetails | null = await this.userUseCases.fetchHallWithOrganizerDetails();
-      
-      if (!details) {
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 5;
+
+      const { details, totalPages } = await this.userUseCases.fetchHallWithOrganizerDetails(page, limit);
+      console.log(totalPages, 'totalpages')
+
+      if (!details || details.eventHalls.length === 0) {
         res.status(404).json({ message: 'Event hall details not found' });
-        return; // Ensure method exits after sending response
+        return;
       }
-      // console.log(details)
-      res.status(200).json(details);
+
+      res.status(200).json({ details, totalPages });
     } catch (error: any) {
       console.error('Error fetching hall details:', error);
       if (!res.headersSent) {
@@ -198,18 +201,19 @@ export class UserController {
       }
     }
   };
-  
+
+
 
   singleHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const hallId = req.params.id;
       const details = await this.userUseCases.fetchHallWithOrganizerWithId(hallId);
-      
+
       if (!details) {
         res.status(404).json({ message: 'Event hall details not found' });
         return;
       }
-      
+
       res.status(200).json(details);
     } catch (error) {
       console.error('Error fetching hall details:', error);
@@ -219,38 +223,38 @@ export class UserController {
     }
   }
 
-   getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.params.userId;
       const details = await this.userUseCases.getProfile(userId);
 
-      if(!details){
-        res.status(404).json({message: 'user profile details not found'});
+      if (!details) {
+        res.status(404).json({ message: 'user profile details not found' });
       }
 
       res.status(200).json(details);
 
     } catch (error) {
       console.error('Error fetching user details');
-      res.status(500).json({message: 'Internal server error'});
+      res.status(500).json({ message: 'Internal server error' });
     }
   }
 
   async postProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-        const userId = req.params.userId;
-        const profileData = req.body; // This will contain address, city, pin, district, mobileNumber, etc.
+      const userId = req.params.userId;
+      const profileData = req.body; // This will contain address, city, pin, district, mobileNumber, etc.
 
-        const updatedUser = await this.userUseCases.updateUserProfile(userId, profileData);
+      const updatedUser = await this.userUseCases.updateUserProfile(userId, profileData);
 
-        if (updatedUser) {
-            res.status(200).json(updatedUser);
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
+      if (updatedUser) {
+        res.status(200).json(updatedUser);
+      } else {
+        res.status(404).json({ message: 'User not found' });
+      }
     } catch (error) {
-        next(error);
+      next(error);
     }
-}
-  
+  }
+
 }

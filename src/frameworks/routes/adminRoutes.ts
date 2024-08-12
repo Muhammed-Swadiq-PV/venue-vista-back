@@ -10,7 +10,7 @@ const router = Router();
 const admRepository = new MongoDBAdmRepository();
 const userRepository = new MongoDBUserRepository();
 const orgRepository = new MongoDBOrgRepository(OrgPostModel);
-const admUseCases = new AdmUseCases(admRepository, userRepository , orgRepository);
+const admUseCases = new AdmUseCases(admRepository, userRepository, orgRepository);
 const admController = new AdmController(admUseCases);
 
 router.post('/signin', admController.signinAdmin.bind(admController));
@@ -19,7 +19,7 @@ router.get('/users', admController.fetchUsers.bind(admController));
 
 router.patch('/users/:id', admController.blockUsers.bind(admController));
 
-router.get('/organizer' , admController.fetchOrganizers.bind(admController));
+router.get('/organizer', admController.fetchOrganizers.bind(admController));
 
 router.patch('/organizer/:id', admController.blockOrganizers.bind(admController));
 

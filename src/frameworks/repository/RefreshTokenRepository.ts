@@ -1,5 +1,4 @@
 
-// In a separate file:
 import { RefreshToken } from '../../entity/models/RefreshTokenModel';
 
 class RefreshTokenRepository {

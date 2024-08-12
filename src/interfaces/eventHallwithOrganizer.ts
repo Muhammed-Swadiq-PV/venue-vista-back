@@ -1,3 +1,4 @@
+
 export interface SectionDetails {
     images: string[];
     description: string;

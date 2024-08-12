@@ -11,7 +11,7 @@ export class AdmUseCases {
     private userRepository: UserRepository;
     private orgRepository: OrgRepository;
 
-    constructor(admRepository: admRepository , userRepository: UserRepository , orgRepository: OrgRepository) {
+    constructor(admRepository: admRepository, userRepository: UserRepository, orgRepository: OrgRepository) {
         this.admRepository = admRepository;
         this.userRepository = userRepository;
         this.orgRepository = orgRepository;
@@ -19,7 +19,7 @@ export class AdmUseCases {
 
     async signin(email: string, password: string): Promise<AdmEntity | null> {
         const admin = await this.admRepository.findAdminByEmail(email);
-            // console.log(admin, 'admin in usecase')
+        // console.log(admin, 'admin in usecase')
         if (!admin) {
             throw new Error('Admin not found');
         }
@@ -29,13 +29,13 @@ export class AdmUseCases {
             throw new Error('Invalid password');
         }
 
-        return admin; 
+        return admin;
     }
 
     // get user details for view and block or unblock
-    async fetchUsers(page: number, limit: number):  Promise<{ users: UserEntity[], totalPages: number }> {
+    async fetchUsers(page: number, limit: number): Promise<{ users: UserEntity[], totalPages: number }> {
         try {
-            const users = await this.userRepository.getAllUsers(page , limit);
+            const users = await this.userRepository.getAllUsers(page, limit);
             return users;
         } catch (error) {
             console.error('Error in AdmUseCases:', error);
@@ -59,37 +59,37 @@ export class AdmUseCases {
 
     async fetchOrganizers(page: number, limit: number) {
         return await this.orgRepository.fetchOrganizers(page, limit);
-      }
+    }
 
     async blockOrganizer(id: string, isBlocked: boolean): Promise<OrgEntity | null> {
         try {
             const updatedOrganizer = await this.orgRepository.manageOrganizer(id, { isBlocked });
-            if(!updatedOrganizer){
+            if (!updatedOrganizer) {
                 throw new Error('organizer not found');
             }
             return updatedOrganizer;
         } catch (error) {
-            throw new Error ('Failed to update organizer status');
+            throw new Error('Failed to update organizer status');
         }
     }
 
     async fetchPendingOrganizers(): Promise<any[]> {
-        try{
+        try {
             const organizers = await this.orgRepository.getPendingOrganizers();
             return organizers;
-        }catch(erorr){
+        } catch (erorr) {
             throw new Error('Failed to fetch organizers');
         }
     }
 
     async fetchPendingOrganizerWithId(id: string): Promise<OrgEntity | null> {
         try {
-          const organizer = await this.orgRepository.getPendingOrganizerWithId(id);
-          return organizer;
-        } catch (error : any) {
-          throw new Error('Error fetching organizer: ' + error.message);
+            const organizer = await this.orgRepository.getPendingOrganizerWithId(id);
+            return organizer;
+        } catch (error: any) {
+            throw new Error('Error fetching organizer: ' + error.message);
         }
-      }
+    }
 
     async approveOrganizer(id: string): Promise<OrgEntity | null> {
         try {
@@ -97,7 +97,7 @@ export class AdmUseCases {
             return organizer;
         } catch (error: any) {
             throw new Error('Error approving organizer:' + error.message);
-            
+
         }
     }
 

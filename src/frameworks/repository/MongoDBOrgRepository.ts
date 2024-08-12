@@ -161,7 +161,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     try {
       const skip = (page - 1) * limit;
       const [organizers, totalCount] = await Promise.all([
-        this.orgModel.find().skip(skip).limit(limit).exec(),
+        this.orgModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
         this.orgModel.countDocuments().exec()
       ]);
 
@@ -277,54 +277,60 @@ export class MongoDBOrgRepository implements OrgRepository {
   }
 
   // user related get task 
-  async getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null> {
+  async getHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }> {
     try {
+      const skip = (page - 1) * limit;
 
-      const result = await OrgPostModel.aggregate([
-        {
-          $lookup: {
-            from: 'organizers',
-            localField: 'organizerId',
-            foreignField: '_id',
-            as: 'organizerDetails'
-          }
-        },
-        {
-          $unwind: {
-            path: '$organizerDetails',
-            preserveNullAndEmptyArrays: false
-          }
-        },
-        {
-          $match: {
-            'organizerDetails.isProfileApproved': true
-          }
-        },
-        {
-          $project: {
-            _id: 1,
-            organizerId: 1,
-            main: 1,
-            parking: 1,
-            indoor: 1,
-            stage: 1,
-            dining: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            'organizerDetails._id': 1,
-            'organizerDetails.name': 1,
-            'organizerDetails.email': 1,
-            'organizerDetails.phoneNumber': 1,
-            'organizerDetails.buildingFloor': 1,
-            'organizerDetails.city': 1,
-            'organizerDetails.district': 1
-          }
-        }
-      ]).exec();
+      const [result, totalCount] = await Promise.all([
+        OrgPostModel.aggregate([
+          {
+            $lookup: {
+              from: 'organizers',
+              localField: 'organizerId',
+              foreignField: '_id',
+              as: 'organizerDetails'
+            }
+          },
+          {
+            $unwind: {
+              path: '$organizerDetails',
+              preserveNullAndEmptyArrays: false
+            }
+          },
+          {
+            $match: {
+              'organizerDetails.isProfileApproved': true
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              organizerId: 1,
+              main: 1,
+              parking: 1,
+              indoor: 1,
+              stage: 1,
+              dining: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              'organizerDetails._id': 1,
+              'organizerDetails.name': 1,
+              'organizerDetails.email': 1,
+              'organizerDetails.phoneNumber': 1,
+              'organizerDetails.buildingFloor': 1,
+              'organizerDetails.city': 1,
+              'organizerDetails.district': 1
+            }
+          },
+          { $skip: skip },
+          { $limit: limit }
+        ]).exec(),
+        OrgPostModel.countDocuments().exec()
+      ]);
 
       if (result.length === 0) {
         console.log('No data found');
-        return null;
+        return { details: null, totalPages: 0 };
       }
 
       const eventHallsWithOrganizerDetails: EventHallWithOrganizerDetails = {
@@ -350,7 +356,8 @@ export class MongoDBOrgRepository implements OrgRepository {
         }))
       };
 
-      return eventHallsWithOrganizerDetails;
+      const totalPages = Math.ceil(totalCount / limit);
+      return { details: eventHallsWithOrganizerDetails, totalPages };
     } catch (error) {
       console.error('Error fetching main event halls with organizer details:', error);
       throw new Error('Failed to fetch main event halls with organizer details');
@@ -360,6 +367,7 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null> {
     try {
+      console.log(organizerId, 'organizer id')
       const result = await OrgPostModel.aggregate([
         {
           $match: {
@@ -394,10 +402,10 @@ export class MongoDBOrgRepository implements OrgRepository {
             indoor: 1,
             stage: 1,
             dining: 1,
-            carParkingSpace: 1, // Add additional fields
-            bikeParkingSpace: 1, // Add additional fields
-            diningCapacity: 1, // Add additional fields
-            seatingCapacity: 1, // Add additional fields
+            carParkingSpace: 1,
+            bikeParkingSpace: 1,
+            diningCapacity: 1,
+            seatingCapacity: 1,
             createdAt: 1,
             updatedAt: 1,
             'organizerDetails._id': 1,
@@ -410,6 +418,8 @@ export class MongoDBOrgRepository implements OrgRepository {
           }
         }
       ]).exec();
+
+      console.log(result, ' result in repository');
 
       if (result.length === 0) {
         console.log('No data found');
@@ -425,10 +435,10 @@ export class MongoDBOrgRepository implements OrgRepository {
           indoor: item.indoor,
           stage: item.stage,
           dining: item.dining,
-          carParkingSpace: item.carParkingSpace, // Include additional fields
-          bikeParkingSpace: item.bikeParkingSpace, // Include additional fields
-          diningCapacity: item.diningCapacity, // Include additional fields
-          seatingCapacity: item.seatingCapacity, // Include additional fields
+          carParkingSpace: item.carParkingSpace,
+          bikeParkingSpace: item.bikeParkingSpace,
+          diningCapacity: item.diningCapacity,
+          seatingCapacity: item.seatingCapacity,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt
         })),

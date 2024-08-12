@@ -36,10 +36,7 @@ router.get('/event-hall/:id', checkBlock, authenticateJWT, (req, res, next) => {
   userController.singleHallDetails(req, res, next);
 });
 
-router.get('/profile/:userId', userController.getProfile.bind(userController));
-// router.post('/profile/:userId', checkBlock, authenticateJWT, (req, res, next) => {
-//   userController.postProfile(req, res, next);
-// });
+router.get('/profile/:userId', checkBlock, userController.getProfile.bind(userController));
 
 router.post('/profile/:userId', checkBlock,userController.postProfile.bind(userController));
 

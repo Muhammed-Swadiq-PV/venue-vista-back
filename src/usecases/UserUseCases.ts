@@ -2,14 +2,14 @@ import { UserRepository } from '../entity/repository/userRepository';
 import { OrgRepository } from '../entity/repository/orgRepository';
 import { UserEntity } from '../entity/models/UserEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
-import {EventHallWithOrganizerDetails} from '../interfaces/eventHallwithOrganizer'
+import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer'
 import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
 
 export class UserUseCases {
   private userRepository: UserRepository;
   private orgRepository: OrgRepository;
 
-  constructor(userRepository: UserRepository , orgRepository: OrgRepository) {
+  constructor(userRepository: UserRepository, orgRepository: OrgRepository) {
     this.userRepository = userRepository;
     this.orgRepository = orgRepository;
   }
@@ -26,7 +26,7 @@ export class UserUseCases {
       const otp = generateOTP();
       existingUser.otp = otp;
       await this.userRepository.updateUser(existingUser);
-      await sendOtpEmail(existingUser.name, existingUser.email, otp); 
+      await sendOtpEmail(existingUser.name, existingUser.email, otp);
       throw new Error('User already exists but is not verified. OTP has been sent.');
     }
 
@@ -36,7 +36,7 @@ export class UserUseCases {
     user.isGoogle = false;
 
     const newUser = await this.userRepository.createUser(user);
-    await sendOtpEmail(newUser.name, newUser.email, otp); 
+    await sendOtpEmail(newUser.name, newUser.email, otp);
 
     return newUser;
   }
@@ -47,7 +47,7 @@ export class UserUseCases {
     // console.log(user.isGoogle, 'user.isgoogle status in user case')
     return this.userRepository.createUser(user);
   }
-  
+
 
 
   async resendOtp(email: string): Promise<void> {
@@ -64,7 +64,7 @@ export class UserUseCases {
     const otp = generateOTP();
     user.otp = otp;
     await this.userRepository.updateUser(user);
-    await sendOtpEmail(user.name, user.email, otp); 
+    await sendOtpEmail(user.name, user.email, otp);
   }
 
   async verifyUser(email: string, otp: string): Promise<UserEntity> {
@@ -114,16 +114,17 @@ export class UserUseCases {
     }
     return user;
   }
-  
-  async fetchHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null> {
-    return await this.orgRepository.getHallWithOrganizerDetails();
+
+  async fetchHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }> {
+    return await this.orgRepository.getHallWithOrganizerDetails(page, limit);
   }
 
+
   async fetchHallWithOrganizerWithId(hallId: string): Promise<EventHallWithOrganizerId | null> {
-     
+
     const organizerId = await this.orgRepository.getOrganizerIdfrompostId(hallId);
 
-    if(!organizerId){
+    if (!organizerId) {
       console.log('No organizer id for the post id');
       return null;
     }
@@ -137,6 +138,6 @@ export class UserUseCases {
 
   async updateUserProfile(userId: string, profileData: Partial<UserEntity>): Promise<UserEntity | null> {
     return await this.userRepository.updateUserProfile(userId, profileData);
-}
+  }
 
 }

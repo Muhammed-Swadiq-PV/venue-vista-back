@@ -20,6 +20,7 @@ export interface OrgRepository {
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;
 
     //for admin related tasks
+
     fetchOrganizers(page: number, limit: number): Promise<{ organizers: OrgEntity[], totalPages: number }>
 
     manageOrganizer(id: string, updateData: Partial<OrgEntity>): Promise<OrgEntity | null>;
@@ -28,7 +29,7 @@ export interface OrgRepository {
     approveOrganizer(id: string): Promise<OrgEntity | null>;
     disApproveOrganizer(id: string): Promise<OrgEntity | null>;
     //for user related tasks
-    getHallWithOrganizerDetails(): Promise<EventHallWithOrganizerDetails | null>;
+    getHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }>
 
 
     getOrganizerIdfrompostId(hallId: string): Promise<string | null>;

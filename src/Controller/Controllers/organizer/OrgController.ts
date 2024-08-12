@@ -58,7 +58,7 @@ export class OrgController {
 
       await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
-      res.status(200).json({ message: 'signed up successfully with!', organizerId: organizer.id , organizer, accessToken, refreshToken });
+      res.status(200).json({ message: 'signed up successfully with!', organizerId: organizer.id, organizer, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error verifying user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid OTP') {
@@ -100,7 +100,7 @@ export class OrgController {
 
       await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
-      res.status(200).json({ message: 'signed up successfully with Google!', organizerId: organizer.id , organizer, accessToken, refreshToken });
+      res.status(200).json({ message: 'signed up successfully with Google!', organizerId: organizer.id, organizer, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Google OAuth error:', error);
       res.status(500).json({ error: 'Failed to sign up with Google. Please try again.' });
@@ -164,7 +164,7 @@ export class OrgController {
       // Save refresh token to database or memory
       await saveRefreshToken(organizer.id, refreshToken, 'organizer');
 
-      res.status(200).json({ organizerId: organizer.id ,  organizer, accessToken, refreshToken });
+      res.status(200).json({ organizerId: organizer.id, organizer, accessToken, refreshToken });
     } catch (error: any) {
       console.error('Error signing in organizer:', error.message);
       if (error.message === 'Organizer not found' || error.message === 'Organizer not verified' || error.message === 'Organizer not signed up with Google auth') {
@@ -320,6 +320,7 @@ export class OrgController {
     try {
       const organizerId = req.params.organizerId;
       const details = await this.orgUseCases.getCompletePostDetails(organizerId);
+      // console.log(details, 'details in view post')
 
       if (!details) {
         res.status(400).json({ message: 'Organizer post details doesnt found ' });
