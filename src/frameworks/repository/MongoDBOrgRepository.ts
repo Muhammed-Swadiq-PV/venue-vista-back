@@ -102,6 +102,28 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
+  async updateLocation(organizerId: string, location: { lat: number; lng: number }): Promise<OrgEntity | null> {
+    try {
+      const updatedOrganizer = await OrgModel.findByIdAndUpdate(
+        organizerId,
+        { $set: { location } },
+        { new: true, runValidators: true } 
+      ).exec();
+  
+      if (!updatedOrganizer) {
+        console.error('Organizer not found');
+        return null;
+      }
+  
+      // console.log('Updated organizer:', updatedOrganizer); 
+      return updatedOrganizer;
+    } catch (error) {
+      console.error('Error updating organizer:', error);
+      throw error;
+    }
+  }
+  
+
   async validatePassword(email: string, password: string): Promise<boolean> {
     const organizer = await this.findOrganizerByEmail(email);
     if (!organizer || !organizer.password) {
@@ -265,6 +287,8 @@ export class MongoDBOrgRepository implements OrgRepository {
   }
 
 
+
+
   async createPost(post: OrgPostEntity): Promise<OrgPostEntity> {
     const newPost = new OrgPostModel(post);
     const savedPost = await newPost.save();
@@ -367,7 +391,7 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null> {
     try {
-      console.log(organizerId, 'organizer id')
+      // console.log(organizerId, 'organizer id')
       const result = await OrgPostModel.aggregate([
         {
           $match: {
@@ -419,7 +443,7 @@ export class MongoDBOrgRepository implements OrgRepository {
         }
       ]).exec();
 
-      console.log(result, ' result in repository');
+      // console.log(result, ' result in repository');
 
       if (result.length === 0) {
         console.log('No data found');

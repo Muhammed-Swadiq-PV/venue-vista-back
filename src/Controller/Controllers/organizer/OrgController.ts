@@ -214,6 +214,25 @@ export class OrgController {
     }
   };
 
+  async saveLocation(req: Request, res: Response): Promise<void> {
+    try {
+      const { organizerId, lat, lng }: { organizerId: string; lat: number; lng: number } = req.body;
+  
+      if (typeof lat !== 'number' || typeof lng !== 'number' || !organizerId) {
+        res.status(400).json({ error: 'Invalid location data' });
+        return;
+      }
+  
+      const location = { lat, lng };
+      await this.orgUseCases.saveLocation(organizerId, location);
+      res.status(200).json({ message: 'Location saved successfully!' });
+    } catch (error) {
+      console.error('Error saving location:', error);
+      res.status(500).json({ error: 'Failed to save location. Please try again.' });
+    }
+  }
+  
+
 
   async viewProfile(req: Request, res: Response): Promise<void> {
     try {

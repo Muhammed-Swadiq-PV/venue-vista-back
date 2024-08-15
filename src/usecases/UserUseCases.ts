@@ -44,14 +44,12 @@ export class UserUseCases {
   async createGoogleUser(user: UserEntity): Promise<UserEntity> {
     user.isVerified = true;
     user.isGoogle = true;
-    // console.log(user.isGoogle, 'user.isgoogle status in user case')
     return this.userRepository.createUser(user);
   }
 
 
 
   async resendOtp(email: string): Promise<void> {
-    // console.log('inside user usecases resendotp' , email)
     const user = await this.userRepository.findUserByEmail(email);
     if (!user) {
       throw new Error('User not found');
@@ -72,7 +70,6 @@ export class UserUseCases {
     if (!user) {
       throw new Error('User not found');
     }
-
     if (user.otp !== otp) {
       throw new Error('Invalid OTP');
     }

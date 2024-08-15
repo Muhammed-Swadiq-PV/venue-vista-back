@@ -12,6 +12,7 @@ export interface OrgRepository {
     validatePassword(email: string, password: string): Promise<boolean>;
     updateOrganizer(organizer: OrgEntity): Promise<OrgEntity>;
     updateProfile(userId: string, profileData: Partial<OrgEntity>): Promise<void>;
+    updateLocation(organizerId: string, location: { lat: number; lng: number }): Promise<OrgEntity | null>
     updateOrganizerByEmail(email: string, profileData: Partial<OrgEntity>): Promise<OrgEntity | null>;
 
     findProfileById(organizerId: string): Promise<OrgEntity | null>;

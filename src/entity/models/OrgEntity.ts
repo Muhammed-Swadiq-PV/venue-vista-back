@@ -18,4 +18,8 @@ export interface OrgEntity {
     isProfileVerified?: boolean;
     isProfileApproved?: boolean;
     isProfileUpdated?: boolean;
+    location?: {
+        lat?: number;
+        lng?: number;
+      };
 }

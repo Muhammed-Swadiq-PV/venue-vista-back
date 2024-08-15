@@ -126,9 +126,22 @@ export class OrgUseCases {
     return savedOrganizer;
   }
 
+
+  async saveLocation(organizerId: string, location: { lat: number; lng: number }): Promise<OrgEntity | null> {
+    const existingOrganizer = await this.orgRepository.findProfileById(organizerId);
+    
+    if (!existingOrganizer) {
+      throw new Error('Organizer not found');
+    }
+
+    const updatedOrganizer = await this.orgRepository.updateLocation(organizerId, location);
+    
+    return updatedOrganizer;
+  }
+
+  
   async viewProfile(organizerId: string): Promise<OrgEntity | null> {
     const organizerProfile = await this.orgRepository.findProfileById(organizerId);
-    // console.log(organizerProfile, 'organizer profile in use case')
     return organizerProfile;
   }
 

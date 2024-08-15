@@ -107,16 +107,7 @@ export class UserController {
       const { email, otp } = req.body;
       const user = await this.userUseCases.verifyUser(email, otp);
 
-      if (!user || !user.id) {
-        throw new Error('user not found');
-      }
-
-      const accessToken = generateUserAccessToken(user, JWT_SECRET as string);
-      const refreshToken = generateUserRefreshToken(user, REFRESH_TOKEN_SECRET as string);
-
-      await saveRefreshToken(user.id, refreshToken, 'user');
-
-      res.status(200).json({ message: 'User verified successfully', user, accessToken, refreshToken });
+      res.status(200).json({ message: 'User verified successfully', user, });
     } catch (error: any) {
       console.error('Error verifying user:', error.message);
       if (error.message === 'User not found' || error.message === 'Invalid OTP') {
@@ -186,7 +177,7 @@ export class UserController {
       const limit = parseInt(req.query.limit as string, 10) || 5;
 
       const { details, totalPages } = await this.userUseCases.fetchHallWithOrganizerDetails(page, limit);
-      console.log(totalPages, 'totalpages')
+      // console.log(totalPages, 'totalpages')
 
       if (!details || details.eventHalls.length === 0) {
         res.status(404).json({ message: 'Event hall details not found' });

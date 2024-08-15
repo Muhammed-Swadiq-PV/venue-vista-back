@@ -135,10 +135,8 @@ export class MongoDBUserRepository implements UserRepository {
         { $set: updateObject },
         { new: true }
       ).exec();
-      // console.log(result, 'result in manageusers')
       return result ? result.toObject() : null;
     } catch (error) {
-      // console.error('Error updating user:', error);
       throw new Error('Failed to update user');
     }
   }
@@ -148,7 +146,6 @@ export class MongoDBUserRepository implements UserRepository {
     try {
       const objectId = new mongoose.Types.ObjectId(userId);
       const profile = await UserModel.findById(objectId);
-      // console.log(profile, 'profile in repository');
 
       return profile;
     } catch (error) {
