@@ -20,12 +20,24 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
     isProfileVerified: { type: Boolean, default: false },
     isProfileApproved: { type: Boolean, default: false },
     isProfileUpdated: { type: Boolean, default: false },
+    // location: {
+    //   lat: { type: Number, required: false },
+    //   lng: { type: Number, required: false }
+    // }
     location: {
-      lat: { type: Number, required: false },
-      lng: { type: Number, required: false }
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true
+      },
+      coordinates: {
+        type: [Number],
+        required: true
+      }
     }
   }, { timestamps: true });
   
+  organizerSchema.index({ location: '2dsphere' });
   
   const OrgModel: Model<OrgEntity & Document> = mongoose.model('Organizer', organizerSchema);
 

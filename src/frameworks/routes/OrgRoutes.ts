@@ -24,7 +24,7 @@ router.post('/create-profile', authenticateJWT, (req, res, next) => {
 
 router.post('/savelocation' , orgController.saveLocation.bind(orgController));
 
-router.get('/profile/:organizerId', organizerBlock, orgController.viewProfile.bind(orgController)); //checking organizer post is that updated
+router.get('/profile/:organizerId', organizerBlock, orgController.viewProfile.bind(orgController)); //checking organizer profile is that updated
 
 router.get('/presigned-url', orgController.getPresignedUrl.bind(orgController));
 

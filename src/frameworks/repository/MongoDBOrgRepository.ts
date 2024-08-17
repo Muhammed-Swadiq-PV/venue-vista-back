@@ -106,7 +106,8 @@ export class MongoDBOrgRepository implements OrgRepository {
     try {
       const updatedOrganizer = await OrgModel.findByIdAndUpdate(
         organizerId,
-        { $set: { location } },
+        // { $set: { location } },
+        { $set: { location: { type: 'Point', coordinates: [location.lng, location.lat] } } },
         { new: true, runValidators: true } 
       ).exec();
   
@@ -388,10 +389,110 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
+  async findOrganizersByLocation(latitude: number, longitude: number): Promise<any> { 
+    try {
+  
+      const organizers = await OrgModel.find({
+        location: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+            $maxDistance: 10000 // 10 km radius
+          }
+        }
+      }).select('_id').exec(); 
+  
+      return organizers;
+    } catch (error) {
+      console.error('Error fetching organizers:', error);
+      throw new Error('Failed to fetch organizers');
+    }
+  }  
+
+
+  async completeDetailsOfNearestOrganizers(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
+    try {
+      const result = await OrgPostModel.aggregate([
+        { $match: { organizerId: new mongoose.Types.ObjectId(hallId) } },
+        {
+          $lookup: {
+            from: 'organizers',
+            localField: 'organizerId',
+            foreignField: '_id',
+            as: 'organizerDetails'
+          }
+        },
+        {
+          $unwind: {
+            path: '$organizerDetails',
+            preserveNullAndEmptyArrays: false
+          }
+        },
+        {
+          $match: {
+            'organizerDetails.isProfileApproved': true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            organizerId: 1,
+            main: 1,
+            parking: 1,
+            indoor: 1,
+            stage: 1,
+            dining: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            'organizerDetails._id': 1,
+            'organizerDetails.name': 1,
+            'organizerDetails.email': 1,
+            'organizerDetails.phoneNumber': 1,
+            'organizerDetails.buildingFloor': 1,
+            'organizerDetails.city': 1,
+            'organizerDetails.district': 1
+          }
+        }
+      ]).exec();
+  
+      if (result.length === 0) {
+        console.log('No data found');
+        return null;
+      }
+  
+      const eventHallWithOrganizerDetails: EventHallWithOrganizerDetails = {
+        eventHalls: result.map(item => ({
+          _id: item._id,
+          organizerId: item.organizerId,
+          main: item.main,
+          parking: item.parking,
+          indoor: item.indoor,
+          stage: item.stage,
+          dining: item.dining,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt
+        })),
+        organizers: result.map(item => ({
+          _id: item.organizerDetails._id,
+          name: item.organizerDetails.name,
+          email: item.organizerDetails.email,
+          phoneNumber: item.organizerDetails.phoneNumber,
+          buildingFloor: item.organizerDetails.buildingFloor,
+          city: item.organizerDetails.city,
+          district: item.organizerDetails.district
+        }))
+      };
+  
+      return eventHallWithOrganizerDetails;
+    } catch (error) {
+      console.error('Error fetching hall details:', error);
+      throw new Error('Failed to fetch hall details');
+    }
+  }
+  
+
 
   async getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null> {
     try {
-      // console.log(organizerId, 'organizer id')
       const result = await OrgPostModel.aggregate([
         {
           $match: {

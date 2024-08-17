@@ -116,6 +116,32 @@ export class UserUseCases {
     return await this.orgRepository.getHallWithOrganizerDetails(page, limit);
   }
 
+  // get ids of the eventhalls that near to user location
+ async fetchOrganizersByLocation(latitude: number, longitude: number): Promise<any> {
+  try {
+    return await this.orgRepository.findOrganizersByLocation(latitude, longitude);
+  } catch (error) {
+    console.error('Error fetching organizers in use case:', error);
+    throw new Error('Failed to fetch organizers');
+  }
+}
+
+// get complete details of the venues that already sending from the front
+completeDetailsOfNearestOrganizers = async (ids: string[]): Promise<EventHallWithOrganizerDetails[]> => {
+  try {
+    const eventHallDetails = await Promise.all(ids.map(id => 
+      this.orgRepository.completeDetailsOfNearestOrganizers(id)
+    ));
+
+    console.log(eventHallDetails, 'event hall details')
+
+    // Filter out any null results
+    return eventHallDetails.filter(details => details !== null) as EventHallWithOrganizerDetails[];
+  } catch (error) {
+    throw new Error('Error fetching organizer details');
+  }
+};
+
 
   async fetchHallWithOrganizerWithId(hallId: string): Promise<EventHallWithOrganizerId | null> {
 

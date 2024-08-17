@@ -194,6 +194,49 @@ export class UserController {
   };
 
 
+  getOrganizerByLocation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { lat, lon } = req.query;
+
+      if (typeof lat !== 'string' || typeof lon !== 'string') {
+         res.status(400).json({ message: 'Invalid latitude or longitude' });
+         return;
+      }
+
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+
+      console.log(latitude, longitude, 'latitude and longitude')
+      console.log(typeof(latitude))
+
+      const organizers = await this.userUseCases.fetchOrganizersByLocation(latitude, longitude);
+      console.log(organizers, 'organizers');
+
+      res.status(200).json(organizers);
+    } catch (error) {
+      console.error('Error fetching organizers:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  };
+
+  completeDetailsOfNearestOrganizers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { ids } = req.body;
+    console.log(ids, 'ids in controller cdofnearestorg')
+
+    try {
+      if (!Array.isArray(ids) || ids.some(id => typeof id !== 'string')) {
+        res.status(400).json({ error: 'Invalid data format' });
+        return;
+      }
+
+      const organizers = await this.userUseCases.completeDetailsOfNearestOrganizers(ids);
+      res.json(organizers);
+    } catch (error) {
+      console.error('Error fetching organizer details:', error);
+      res.status(500).json({ error: 'Failed to fetch organizer details' });
+    }
+  };
+
 
   singleHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

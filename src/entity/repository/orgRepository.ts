@@ -31,6 +31,8 @@ export interface OrgRepository {
     disApproveOrganizer(id: string): Promise<OrgEntity | null>;
     //for user related tasks
     getHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }>
+    findOrganizersByLocation(latitude: number, longitude: number): Promise<any>
+    completeDetailsOfNearestOrganizers(hallId: string): Promise<EventHallWithOrganizerDetails | null>
 
 
     getOrganizerIdfrompostId(hallId: string): Promise<string | null>;
