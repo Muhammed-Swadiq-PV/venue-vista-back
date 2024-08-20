@@ -199,15 +199,15 @@ export class UserController {
       const { lat, lon } = req.query;
 
       if (typeof lat !== 'string' || typeof lon !== 'string') {
-         res.status(400).json({ message: 'Invalid latitude or longitude' });
-         return;
+        res.status(400).json({ message: 'Invalid latitude or longitude' });
+        return;
       }
 
       const latitude = parseFloat(lat);
       const longitude = parseFloat(lon);
 
       console.log(latitude, longitude, 'latitude and longitude')
-      console.log(typeof(latitude))
+      console.log(typeof (latitude))
 
       const organizers = await this.userUseCases.fetchOrganizersByLocation(latitude, longitude);
       console.log(organizers, 'organizers');
@@ -236,6 +236,23 @@ export class UserController {
       res.status(500).json({ error: 'Failed to fetch organizer details' });
     }
   };
+
+  getOrganizerName = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const orgId = req.params.id;
+
+      const name = await this.userUseCases.getOrganizerName(orgId);
+
+      if (!name) {
+        res.status(404).json({ message: 'organizer name not found' });
+        return;
+      }
+      res.status(200).json(name);
+    } catch (error) {
+      console.error('Error fetching organizer name:', error);
+      res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+  }
 
 
   singleHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

@@ -4,10 +4,9 @@ import { OrgPostEntity } from '../../entity/models/OrgPostEntity';
 import { OrgPostDocument } from '../../entity/models/OrgPostDocument';
 import OrgPostModel from '../../entity/models/OrgPostModel';
 import { ObjectId } from 'mongodb';
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Model , Types} from 'mongoose';
 import OrgModel from '../../entity/models/organizerModel';
 import bcryptjs from 'bcryptjs';
-import { Types } from 'mongoose';
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 
@@ -20,7 +19,7 @@ export class MongoDBOrgRepository implements OrgRepository {
 
 
   constructor(postModel: Model<OrgPostDocument>) {
-    this.orgModel = OrgModel; // Use the defined model
+    this.orgModel = OrgModel; 
     this.postModel = postModel;
   }
 
@@ -488,6 +487,39 @@ export class MongoDBOrgRepository implements OrgRepository {
       throw new Error('Failed to fetch hall details');
     }
   }
+
+  async getOrganizerName(postId: string): Promise<string | null> {
+    try {
+
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+        throw new Error('Invalid Post ID format');
+      }
+  
+      const postObjectId = new mongoose.Types.ObjectId(postId);
+      const post = await this.postModel.findById(postObjectId).select('organizerId').exec();
+  
+      if (!post) {
+        console.log('Post not found');
+        return null;
+      }
+  
+      const { organizerId } = post;
+  
+      const organizer = await this.orgModel.findById(organizerId).select('name').exec();
+      console.log(organizer?.name, 'organizer')
+  
+      if (!organizer) {
+        console.log('Organizer not found');
+        return null;
+      }
+  
+      return organizer?.name;
+    } catch (error) {
+      console.error('Error fetching organizer name:', error);
+      throw new Error('Failed to fetch organizer name');
+    }
+  }
+  
   
 
 

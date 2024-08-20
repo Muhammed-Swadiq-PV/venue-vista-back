@@ -36,6 +36,10 @@ router.get('/organizers', checkBlock, userController.getOrganizerByLocation);
 
 router.post('/organizers/details', checkBlock, userController.completeDetailsOfNearestOrganizers);
 
+router.get('/organizers/:id', authenticateJWT, checkBlock, (req, res, next) => {
+  userController.getOrganizerName(req, res, next);
+})
+
 router.get('/event-hall/:id', checkBlock, authenticateJWT, (req, res, next) => {
   userController.singleHallDetails(req, res, next);
 });

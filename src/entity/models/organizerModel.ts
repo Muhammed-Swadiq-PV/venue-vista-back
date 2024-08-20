@@ -20,10 +20,6 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
     isProfileVerified: { type: Boolean, default: false },
     isProfileApproved: { type: Boolean, default: false },
     isProfileUpdated: { type: Boolean, default: false },
-    // location: {
-    //   lat: { type: Number, required: false },
-    //   lng: { type: Number, required: false }
-    // }
     location: {
       type: {
         type: String,

@@ -142,6 +142,20 @@ completeDetailsOfNearestOrganizers = async (ids: string[]): Promise<EventHallWit
   }
 };
 
+  async getOrganizerName(orgId: string): Promise<string | null> {
+    try {
+      const organizerName = await this.orgRepository.getOrganizerName(orgId);
+
+    if(!organizerName){
+      console.log('no organizer in the id');
+      return null;
+    }
+    return organizerName;
+    } catch (error) {
+      console.error('Error fetching organizer name', error);
+      throw new Error('Failed to fetch organizer name');
+    }
+  }
 
   async fetchHallWithOrganizerWithId(hallId: string): Promise<EventHallWithOrganizerId | null> {
 

@@ -34,7 +34,7 @@ export interface OrgRepository {
     findOrganizersByLocation(latitude: number, longitude: number): Promise<any>
     completeDetailsOfNearestOrganizers(hallId: string): Promise<EventHallWithOrganizerDetails | null>
 
-
+    getOrganizerName(orgId: string): Promise<string | null>;
     getOrganizerIdfrompostId(hallId: string): Promise<string | null>;
     getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null>;
 
