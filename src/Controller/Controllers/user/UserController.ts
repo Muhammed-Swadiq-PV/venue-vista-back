@@ -194,9 +194,27 @@ export class UserController {
   };
 
 
+  searchEventHallByName = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const searchTerm = req.query.search as string;
+
+      if(!searchTerm){
+      res.status(400).json({message: 'Search term is required'});
+      return;
+      }
+      const eventHalls = await this.userUseCases.searchEventHallByName(searchTerm);
+
+      res.status(200).json(eventHalls);
+    } catch (error) {
+      console.error('Error fetching hall details', error);
+      res.status(500).json({message: ' Internal server error'});
+    }
+  }
+
+
   getOrganizerByLocation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { lat, lon } = req.query;
+      const { lat, lon} = req.query;
 
       if (typeof lat !== 'string' || typeof lon !== 'string') {
         res.status(400).json({ message: 'Invalid latitude or longitude' });
@@ -207,10 +225,8 @@ export class UserController {
       const longitude = parseFloat(lon);
 
       console.log(latitude, longitude, 'latitude and longitude')
-      console.log(typeof (latitude))
 
       const organizers = await this.userUseCases.fetchOrganizersByLocation(latitude, longitude);
-      console.log(organizers, 'organizers');
 
       res.status(200).json(organizers);
     } catch (error) {

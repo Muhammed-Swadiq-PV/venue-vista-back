@@ -3,6 +3,7 @@ import { OrgEntity } from '../models/OrgEntity';
 import { OrgPostEntity } from '../models/OrgPostEntity';
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
+import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
 
 
 export interface OrgRepository {
@@ -33,6 +34,8 @@ export interface OrgRepository {
     getHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }>
     findOrganizersByLocation(latitude: number, longitude: number): Promise<any>
     completeDetailsOfNearestOrganizers(hallId: string): Promise<EventHallWithOrganizerDetails | null>
+    // findOrganizerWithEventHallByName(name: string): Promise<EventHallWithOrganizerDetails | null>
+    findOrganizerWithEventHallByName(name: string): Promise<EventHallAndOrganizerArray | null> 
 
     getOrganizerName(orgId: string): Promise<string | null>;
     getOrganizerIdfrompostId(hallId: string): Promise<string | null>;

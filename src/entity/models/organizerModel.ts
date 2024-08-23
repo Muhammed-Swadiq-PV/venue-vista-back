@@ -24,11 +24,11 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
       type: {
         type: String,
         enum: ['Point'],
-        required: true
+        required: false
       },
       coordinates: {
         type: [Number],
-        required: true
+        required: false
       }
     }
   }, { timestamps: true });

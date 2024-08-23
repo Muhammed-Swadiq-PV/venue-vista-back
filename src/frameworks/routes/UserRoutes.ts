@@ -32,6 +32,8 @@ router.get('/posts/latest', checkBlock, authenticateJWT, (req, res, next) => {
   userController.mainEventHallDetails(req, res, next);
 });
 
+router.get('/event-halls', userController.searchEventHallByName)
+
 router.get('/organizers', checkBlock, userController.getOrganizerByLocation);
 
 router.post('/organizers/details', checkBlock, userController.completeDetailsOfNearestOrganizers);

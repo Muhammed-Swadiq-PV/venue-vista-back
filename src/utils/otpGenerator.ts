@@ -12,6 +12,7 @@ export const generateOTP = (): string => {
 export const sendOtpEmail = async (name: string,email: string, otp: string): Promise<void> => {
   // Create a transporter object using SMTP transport
   try{
+    console.log('inside send otp email')
   const transporter = nodemailer.createTransport({
     host: process.env.MAIL_srvc, // Corrected the environment variable name
     port: Number(process.env.SMTP_PORT),

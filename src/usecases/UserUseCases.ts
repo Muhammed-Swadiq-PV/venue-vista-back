@@ -4,6 +4,7 @@ import { UserEntity } from '../entity/models/UserEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer'
 import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
+import { EventHallAndOrganizerArray } from '../interfaces/eventHallForSearch';
 
 export class UserUseCases {
   private userRepository: UserRepository;
@@ -114,6 +115,15 @@ export class UserUseCases {
 
   async fetchHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }> {
     return await this.orgRepository.getHallWithOrganizerDetails(page, limit);
+  }
+
+  async searchEventHallByName(searchTerm: string) : Promise<EventHallAndOrganizerArray | null> {
+    try {
+      const eventHallDetails = await this.orgRepository.findOrganizerWithEventHallByName(searchTerm);
+      return eventHallDetails;
+    } catch (error) {
+      throw new Error('could not retrieve event hall details');
+    }
   }
 
   // get ids of the eventhalls that near to user location

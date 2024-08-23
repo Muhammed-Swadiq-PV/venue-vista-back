@@ -7,8 +7,9 @@ import { ObjectId } from 'mongodb';
 import mongoose, { Schema, Document, Model , Types} from 'mongoose';
 import OrgModel from '../../entity/models/organizerModel';
 import bcryptjs from 'bcryptjs';
-import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
+import {EventHallDetails, OrganizerDetails,  EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
+import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
 
 
 
@@ -23,6 +24,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     this.postModel = postModel;
   }
 
+  
 
   async createOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
     let newOrganizer: OrgEntity;
@@ -407,6 +409,103 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }  
 
+
+  async findOrganizerWithEventHallByName(name: string): Promise<EventHallAndOrganizerArray | null> {
+    try {
+      const result = await OrgPostModel.aggregate([
+        {
+          $lookup: {
+            from: 'organizers',
+            localField: 'organizerId',
+            foreignField: '_id',
+            as: 'organizerDetails'
+          }
+        },
+        {
+          $unwind: {
+            path: '$organizerDetails',
+            preserveNullAndEmptyArrays: false
+          }
+        },
+        {
+          $match: {
+            'organizerDetails.isProfileApproved': true,
+            'organizerDetails.name': { $regex: name, $options: 'i' }
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            organizerId: 1,
+            main: 1,
+            parking: 1,
+            indoor: 1,
+            stage: 1,
+            dining: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            'organizerDetails._id': 1,
+            'organizerDetails.name': 1,
+            'organizerDetails.email': 1,
+            'organizerDetails.phoneNumber': 1,
+            'organizerDetails.buildingFloor': 1,
+            'organizerDetails.city': 1,
+            'organizerDetails.district': 1
+          }
+        }
+      ]).exec();
+  
+      if (result.length === 0) {
+        console.log('No data found');
+        return null;
+      }
+  
+      // Map results into a 2D array format
+      const eventHallAndOrganizerArray: EventHallAndOrganizerArray = result.map(item => [
+        {
+          _id: item._id,
+          organizerId: item.organizerId,
+          main: {
+            images: item.main.images,
+            description: item.main.description
+          },
+          parking: {
+            images: item.parking.images,
+            description: item.parking.description
+          },
+          indoor: {
+            images: item.indoor.images,
+            description: item.indoor.description
+          },
+          stage: {
+            images: item.stage.images,
+            description: item.stage.description
+          },
+          dining: {
+            images: item.dining.images,
+            description: item.dining.description
+          },
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt
+        },
+        {
+          _id: item.organizerDetails._id,
+          name: item.organizerDetails.name,
+          email: item.organizerDetails.email,
+          phoneNumber: item.organizerDetails.phoneNumber,
+          buildingFloor: item.organizerDetails.buildingFloor,
+          city: item.organizerDetails.city,
+          district: item.organizerDetails.district
+        }
+      ]);
+  
+      return eventHallAndOrganizerArray;
+    } catch (error) {
+      console.error('Error fetching organizer and event hall details:', error);
+      throw new Error('Failed to fetch organizer and event hall details');
+    }
+  }
+  
 
   async completeDetailsOfNearestOrganizers(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
     try {
