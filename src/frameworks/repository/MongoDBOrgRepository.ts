@@ -4,10 +4,10 @@ import { OrgPostEntity } from '../../entity/models/OrgPostEntity';
 import { OrgPostDocument } from '../../entity/models/OrgPostDocument';
 import OrgPostModel from '../../entity/models/OrgPostModel';
 import { ObjectId } from 'mongodb';
-import mongoose, { Schema, Document, Model , Types} from 'mongoose';
+import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 import OrgModel from '../../entity/models/organizerModel';
 import bcryptjs from 'bcryptjs';
-import {EventHallDetails, OrganizerDetails,  EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
+import { EventHallDetails, OrganizerDetails, EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
 
@@ -20,11 +20,11 @@ export class MongoDBOrgRepository implements OrgRepository {
 
 
   constructor(postModel: Model<OrgPostDocument>) {
-    this.orgModel = OrgModel; 
+    this.orgModel = OrgModel;
     this.postModel = postModel;
   }
 
-  
+
 
   async createOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
     let newOrganizer: OrgEntity;
@@ -109,14 +109,14 @@ export class MongoDBOrgRepository implements OrgRepository {
         organizerId,
         // { $set: { location } },
         { $set: { location: { type: 'Point', coordinates: [location.lng, location.lat] } } },
-        { new: true, runValidators: true } 
+        { new: true, runValidators: true }
       ).exec();
-  
+
       if (!updatedOrganizer) {
         console.error('Organizer not found');
         return null;
       }
-  
+
       // console.log('Updated organizer:', updatedOrganizer); 
       return updatedOrganizer;
     } catch (error) {
@@ -124,7 +124,7 @@ export class MongoDBOrgRepository implements OrgRepository {
       throw error;
     }
   }
-  
+
 
   async validatePassword(email: string, password: string): Promise<boolean> {
     const organizer = await this.findOrganizerByEmail(email);
@@ -180,6 +180,16 @@ export class MongoDBOrgRepository implements OrgRepository {
     const organizerProfile = await this.orgModel.findOne({ _id: organizerId });
     return organizerProfile ? organizerProfile.toObject() : null;
   };
+
+  async findById(organizerId: ObjectId): Promise<OrgEntity | null> {
+    try {
+      const organizerProfile = await this.orgModel.findById(organizerId).exec();
+      return organizerProfile as OrgEntity | null;
+    } catch (error) {
+      console.error('Error finding organizer by ID:', error);
+      return null;
+    }
+  }
 
   async fetchOrganizers(page: number, limit: number): Promise<{ organizers: OrgEntity[], totalPages: number }> {
     try {
@@ -297,6 +307,43 @@ export class MongoDBOrgRepository implements OrgRepository {
     return savedPost.toObject();
   }
 
+  // organizer creating rules and restrictions to show to user
+  async saveRulesAndRestrictions(data: { rules: string, organizerId: ObjectId }): Promise<OrgEntity | null> {
+    try {
+      const organizer = await OrgModel.findById(data.organizerId).exec();
+
+      if (!organizer) {
+        console.log('Organizer not found');
+        return null;
+      }
+      organizer.rulesAndRestrictions = data.rules;
+
+      const updatedOrganizer = await organizer.save();
+      return updatedOrganizer as OrgEntity;
+    } catch (error) {
+      console.error('Error saving rules and restrictions:', error);
+      throw error;
+    }
+  }
+
+  async cancellationPolicy(data: { policy: string, organizerId: ObjectId }): Promise<OrgEntity | null> {
+    try {
+      const organizer = await OrgModel.findById(data.organizerId).exec();
+
+      if (!organizer) {
+        console.log('organizer not found');
+        return null;
+      }
+      organizer.paymentPolicy = data.policy;
+
+      const updatedOrganizer = await organizer.save();
+      return updatedOrganizer as OrgEntity;
+    } catch (error) {
+      console.error('Error saving payment cancellation policy: ', error);
+      throw error;
+    }
+  }
+
   async getOrganizerIdfrompostId(hallId: string): Promise<string | null> {
     const post = await OrgPostModel.findById(hallId).select('organizerId').lean();
     return post ? (post.organizerId as Types.ObjectId).toString() : null;
@@ -390,9 +437,9 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
-  async findOrganizersByLocation(latitude: number, longitude: number): Promise<any> { 
+  async findOrganizersByLocation(latitude: number, longitude: number): Promise<any> {
     try {
-  
+
       const organizers = await OrgModel.find({
         location: {
           $near: {
@@ -400,14 +447,14 @@ export class MongoDBOrgRepository implements OrgRepository {
             $maxDistance: 10000 // 10 km radius
           }
         }
-      }).select('_id').exec(); 
-  
+      }).select('_id').exec();
+
       return organizers;
     } catch (error) {
       console.error('Error fetching organizers:', error);
       throw new Error('Failed to fetch organizers');
     }
-  }  
+  }
 
 
   async findOrganizerWithEventHallByName(name: string): Promise<EventHallAndOrganizerArray | null> {
@@ -454,12 +501,12 @@ export class MongoDBOrgRepository implements OrgRepository {
           }
         }
       ]).exec();
-  
+
       if (result.length === 0) {
         console.log('No data found');
         return null;
       }
-  
+
       // Map results into a 2D array format
       const eventHallAndOrganizerArray: EventHallAndOrganizerArray = result.map(item => [
         {
@@ -498,14 +545,14 @@ export class MongoDBOrgRepository implements OrgRepository {
           district: item.organizerDetails.district
         }
       ]);
-  
+
       return eventHallAndOrganizerArray;
     } catch (error) {
       console.error('Error fetching organizer and event hall details:', error);
       throw new Error('Failed to fetch organizer and event hall details');
     }
   }
-  
+
 
   async completeDetailsOfNearestOrganizers(hallId: string): Promise<EventHallWithOrganizerDetails | null> {
     try {
@@ -551,12 +598,12 @@ export class MongoDBOrgRepository implements OrgRepository {
           }
         }
       ]).exec();
-  
+
       if (result.length === 0) {
         console.log('No data found');
         return null;
       }
-  
+
       const eventHallWithOrganizerDetails: EventHallWithOrganizerDetails = {
         eventHalls: result.map(item => ({
           _id: item._id,
@@ -579,7 +626,7 @@ export class MongoDBOrgRepository implements OrgRepository {
           district: item.organizerDetails.district
         }))
       };
-  
+
       return eventHallWithOrganizerDetails;
     } catch (error) {
       console.error('Error fetching hall details:', error);
@@ -587,39 +634,39 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
-  async getOrganizerName(postId: string): Promise<string | null> {
+  async getOrganizerName(postId: string): Promise<{ organizerId: string; organizerName: string } | null> {
     try {
 
       if (!mongoose.Types.ObjectId.isValid(postId)) {
         throw new Error('Invalid Post ID format');
       }
-  
+
       const postObjectId = new mongoose.Types.ObjectId(postId);
       const post = await this.postModel.findById(postObjectId).select('organizerId').exec();
-  
+
       if (!post) {
         console.log('Post not found');
         return null;
       }
-  
+
       const { organizerId } = post;
-  
+
       const organizer = await this.orgModel.findById(organizerId).select('name').exec();
       console.log(organizer?.name, 'organizer')
-  
+
       if (!organizer) {
         console.log('Organizer not found');
         return null;
       }
-  
-      return organizer?.name;
+
+      return { organizerId: organizerId.toString(), organizerName: organizer.name };
     } catch (error) {
       console.error('Error fetching organizer name:', error);
       throw new Error('Failed to fetch organizer name');
     }
   }
-  
-  
+
+
 
 
   async getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null> {

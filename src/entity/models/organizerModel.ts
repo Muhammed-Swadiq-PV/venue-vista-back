@@ -30,7 +30,9 @@ const organizerSchema: Schema<OrgEntity & Document> = new mongoose.Schema({
         type: [Number],
         required: false
       }
-    }
+    },
+    rulesAndRestrictions: { type: String },
+    paymentPolicy: { type: String }
   }, { timestamps: true });
   
   organizerSchema.index({ location: '2dsphere' });

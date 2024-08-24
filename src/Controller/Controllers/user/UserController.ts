@@ -257,13 +257,13 @@ export class UserController {
     try {
       const orgId = req.params.id;
 
-      const name = await this.userUseCases.getOrganizerName(orgId);
+      const nameandId = await this.userUseCases.getOrganizerName(orgId);
 
-      if (!name) {
+      if (!nameandId) {
         res.status(404).json({ message: 'organizer name not found' });
         return;
       }
-      res.status(200).json(name);
+      res.status(200).json(nameandId);
     } catch (error) {
       console.error('Error fetching organizer name:', error);
       res.status(500).json({ message: 'An unexpected error occurred' });

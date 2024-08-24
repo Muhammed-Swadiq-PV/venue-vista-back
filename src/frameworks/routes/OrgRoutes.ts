@@ -22,7 +22,7 @@ router.post('/create-profile', authenticateJWT, (req, res, next) => {
   orgController.createProfile(req, res);
 });//for updating profile also checking middleware
 
-router.post('/savelocation' , orgController.saveLocation.bind(orgController));
+router.post('/savelocation', orgController.saveLocation.bind(orgController));
 
 router.get('/profile/:organizerId', organizerBlock, orgController.viewProfile.bind(orgController)); //checking organizer profile is that updated
 
@@ -41,6 +41,13 @@ router.get('/view-post/:organizerId', organizerBlock, authenticateJWT, (req, res
 router.patch('/update-post/:organizerId', organizerBlock, authenticateJWT, (req, res, next) => {
   orgController.editPost(req, res).catch(next);
 });
+
+router.post('/rules-and-restrictions', organizerBlock, authenticateJWT, 
+  orgController.createRulesAndRestrictions.bind(orgController)
+);
+
+router.post('/cancellation-policy', orgController.cancellationPolicy.bind(orgController))
+
 
 
 export default router;

@@ -3,7 +3,7 @@ import { OrgEntity } from '../entity/models/OrgEntity';
 import { OrgPostEntity } from '../entity/models/OrgPostEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 import { GetPresignedUrlUseCase } from './GetPresignedUrlUseCases';
-import mongoose from 'mongoose';
+import  mongoose, { Types}from 'mongoose';
 import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
 
@@ -197,6 +197,38 @@ export class OrgUseCases {
     const result = await this.orgRepository.updatePostDetails(organizerId, section, data);
 
     return result;
+  }
+
+  async createRulesAndRestrictions(rules: string, organizerId:string): Promise<OrgEntity | null> {
+    try {
+      const  orgObjectId = new Types.ObjectId(organizerId);
+      console.log(orgObjectId, 'orgObjectId')
+      const existingOrganizer = await this.orgRepository.findById(orgObjectId);
+
+      if (!existingOrganizer) {
+        console.log('Organizer not found');
+        return null;
+      }
+      return await this.orgRepository.saveRulesAndRestrictions({rules, organizerId: orgObjectId});
+    } catch (error) {
+      console.error('Invalid ObjectId:', error);
+      return null; 
+    }
+  }
+
+  async cancellationPolicy(policy: string, organizerId: string): Promise<OrgEntity | null> {
+    try {
+      const orgObjectId = new Types.ObjectId(organizerId);
+      const existingOrganizer = await this.orgRepository.findById(orgObjectId);
+
+      if(!existingOrganizer){
+        console.log('organizer not found');
+        return null;
+      }
+      return await this.orgRepository.cancellationPolicy({ policy, organizerId:orgObjectId})
+    } catch (error) {
+      return null;
+    }
   }
 
 }

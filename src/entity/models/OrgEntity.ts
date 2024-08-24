@@ -22,4 +22,6 @@ export interface OrgEntity {
         lat?: number;
         lng?: number;
       };
+    rulesAndRestrictions?: string;
+    paymentPolicy?: string;
 }

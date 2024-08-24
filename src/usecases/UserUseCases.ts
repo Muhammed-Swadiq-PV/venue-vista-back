@@ -117,7 +117,7 @@ export class UserUseCases {
     return await this.orgRepository.getHallWithOrganizerDetails(page, limit);
   }
 
-  async searchEventHallByName(searchTerm: string) : Promise<EventHallAndOrganizerArray | null> {
+  async searchEventHallByName(searchTerm: string): Promise<EventHallAndOrganizerArray | null> {
     try {
       const eventHallDetails = await this.orgRepository.findOrganizerWithEventHallByName(searchTerm);
       return eventHallDetails;
@@ -127,40 +127,43 @@ export class UserUseCases {
   }
 
   // get ids of the eventhalls that near to user location
- async fetchOrganizersByLocation(latitude: number, longitude: number): Promise<any> {
-  try {
-    return await this.orgRepository.findOrganizersByLocation(latitude, longitude);
-  } catch (error) {
-    console.error('Error fetching organizers in use case:', error);
-    throw new Error('Failed to fetch organizers');
-  }
-}
-
-// get complete details of the venues that already sending from the front
-completeDetailsOfNearestOrganizers = async (ids: string[]): Promise<EventHallWithOrganizerDetails[]> => {
-  try {
-    const eventHallDetails = await Promise.all(ids.map(id => 
-      this.orgRepository.completeDetailsOfNearestOrganizers(id)
-    ));
-
-    console.log(eventHallDetails, 'event hall details')
-
-    // Filter out any null results
-    return eventHallDetails.filter(details => details !== null) as EventHallWithOrganizerDetails[];
-  } catch (error) {
-    throw new Error('Error fetching organizer details');
-  }
-};
-
-  async getOrganizerName(orgId: string): Promise<string | null> {
+  async fetchOrganizersByLocation(latitude: number, longitude: number): Promise<any> {
     try {
-      const organizerName = await this.orgRepository.getOrganizerName(orgId);
-
-    if(!organizerName){
-      console.log('no organizer in the id');
-      return null;
+      return await this.orgRepository.findOrganizersByLocation(latitude, longitude);
+    } catch (error) {
+      console.error('Error fetching organizers in use case:', error);
+      throw new Error('Failed to fetch organizers');
     }
-    return organizerName;
+  }
+
+  // get complete details of the venues that already sending from the front
+  completeDetailsOfNearestOrganizers = async (ids: string[]): Promise<EventHallWithOrganizerDetails[]> => {
+    try {
+      const eventHallDetails = await Promise.all(ids.map(id =>
+        this.orgRepository.completeDetailsOfNearestOrganizers(id)
+      ));
+
+      console.log(eventHallDetails, 'event hall details')
+
+      // Filter out any null results
+      return eventHallDetails.filter(details => details !== null) as EventHallWithOrganizerDetails[];
+    } catch (error) {
+      throw new Error('Error fetching organizer details');
+    }
+  };
+
+  async getOrganizerName(orgId: string): Promise<{ organizerId: string; organizerName: string } | null> {
+    try {
+      const organizerIdName = await this.orgRepository.getOrganizerName(orgId);
+
+      if (!organizerIdName) {
+        console.log('no organizer in the id');
+        return null;
+      }
+      return {
+        organizerId: organizerIdName.organizerId,
+        organizerName: organizerIdName.organizerName,
+      }
     } catch (error) {
       console.error('Error fetching organizer name', error);
       throw new Error('Failed to fetch organizer name');

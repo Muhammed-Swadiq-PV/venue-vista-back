@@ -4,6 +4,7 @@ import { OrgPostEntity } from '../models/OrgPostEntity';
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
+import { ObjectId } from 'mongodb';
 
 
 export interface OrgRepository {
@@ -17,9 +18,12 @@ export interface OrgRepository {
     updateOrganizerByEmail(email: string, profileData: Partial<OrgEntity>): Promise<OrgEntity | null>;
 
     findProfileById(organizerId: string): Promise<OrgEntity | null>;
+    findById(organizerId: ObjectId): Promise<OrgEntity | null>;
 
     // Post-related methods
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;
+    saveRulesAndRestrictions(data: { rules: string, organizerId: ObjectId }): Promise<OrgEntity | null>;
+    cancellationPolicy(data: { policy: string, organizerId: ObjectId }): Promise<OrgEntity | null>
 
     //for admin related tasks
 
@@ -34,10 +38,9 @@ export interface OrgRepository {
     getHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }>
     findOrganizersByLocation(latitude: number, longitude: number): Promise<any>
     completeDetailsOfNearestOrganizers(hallId: string): Promise<EventHallWithOrganizerDetails | null>
-    // findOrganizerWithEventHallByName(name: string): Promise<EventHallWithOrganizerDetails | null>
-    findOrganizerWithEventHallByName(name: string): Promise<EventHallAndOrganizerArray | null> 
+    findOrganizerWithEventHallByName(name: string): Promise<EventHallAndOrganizerArray | null>
 
-    getOrganizerName(orgId: string): Promise<string | null>;
+    getOrganizerName(postId: string): Promise<{ organizerId: string; organizerName: string } | null>
     getOrganizerIdfrompostId(hallId: string): Promise<string | null>;
     getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null>;
 

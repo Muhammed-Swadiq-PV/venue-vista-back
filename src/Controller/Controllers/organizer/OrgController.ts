@@ -370,4 +370,24 @@ export class OrgController {
     }
   }
 
+  async createRulesAndRestrictions(req: Request, res: Response): Promise<void> {
+    try {
+      const {rules , organizerId } = req.body;
+      const result = await this.orgUseCases.createRulesAndRestrictions(rules, organizerId);
+      res.status(200).json({ message: 'Rules and restrictions saved successfully' });
+    } catch (error) {
+      res.status(500).json({error: 'error occured while saving rules and restrictions'});
+    }
+  }
+
+  async cancellationPolicy(req: Request, res: Response): Promise<void> {
+    try {
+      const {policy, organizerId} = req.body;
+      const result = await this.orgUseCases.cancellationPolicy(policy, organizerId);
+      res.status(200).json({message: 'Cancellation policy saved successfully'});
+    } catch (error) {
+      res.status(500).json({error: 'error occured while saving cancellation policy'})
+    }
+  }
+
 }
