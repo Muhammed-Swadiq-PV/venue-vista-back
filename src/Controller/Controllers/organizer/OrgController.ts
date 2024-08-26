@@ -217,12 +217,12 @@ export class OrgController {
   async saveLocation(req: Request, res: Response): Promise<void> {
     try {
       const { organizerId, lat, lng }: { organizerId: string; lat: number; lng: number } = req.body;
-  
+
       if (typeof lat !== 'number' || typeof lng !== 'number' || !organizerId) {
         res.status(400).json({ error: 'Invalid location data' });
         return;
       }
-  
+
       const location = { lat, lng };
       await this.orgUseCases.saveLocation(organizerId, location);
       res.status(200).json({ message: 'Location saved successfully!' });
@@ -231,7 +231,7 @@ export class OrgController {
       res.status(500).json({ error: 'Failed to save location. Please try again.' });
     }
   }
-  
+
 
 
   async viewProfile(req: Request, res: Response): Promise<void> {
@@ -372,21 +372,47 @@ export class OrgController {
 
   async createRulesAndRestrictions(req: Request, res: Response): Promise<void> {
     try {
-      const {rules , organizerId } = req.body;
+      const { rules, organizerId } = req.body;
       const result = await this.orgUseCases.createRulesAndRestrictions(rules, organizerId);
       res.status(200).json({ message: 'Rules and restrictions saved successfully' });
     } catch (error) {
-      res.status(500).json({error: 'error occured while saving rules and restrictions'});
+      res.status(500).json({ error: 'error occured while saving rules and restrictions' });
     }
   }
 
   async cancellationPolicy(req: Request, res: Response): Promise<void> {
     try {
-      const {policy, organizerId} = req.body;
+      const { policy, organizerId } = req.body;
       const result = await this.orgUseCases.cancellationPolicy(policy, organizerId);
-      res.status(200).json({message: 'Cancellation policy saved successfully'});
+      res.status(200).json({ message: 'Cancellation policy saved successfully' });
     } catch (error) {
-      res.status(500).json({error: 'error occured while saving cancellation policy'})
+      res.status(500).json({ error: 'error occured while saving cancellation policy' });
+    }
+  }
+
+  async addPriceBySelectDay(req: Request, res: Response): Promise<void> {
+    try {
+      const { date, organizerId, dayPrice, nightPrice, fullDayPrice }: { date: string; organizerId: string; dayPrice: number; nightPrice: number; fullDayPrice: number } = req.body;
+      console.log('date:', date, 'organizerId:', organizerId, 'dayPrice:', dayPrice, 'nightPrice:', nightPrice, 'fulldayprice:', fullDayPrice);
+      const dateObj = new Date(date);
+      const result = await this.orgUseCases.addPriceBySelectDay(dateObj, organizerId, { dayPrice, nightPrice, fullDayPrice });
+      res.status(200).json({ message: 'Price by day , night, fullday saved successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'error occured while saving day, night, fullday price' });
+    }
+  }
+
+  async getPriceBySelectDay(req: Request, res: Response): Promise<void> {
+    try {
+      const { date, organizerId } = req.query;
+      console.log(date)
+      console.log(typeof(organizerId))
+      console.log(organizerId)
+      const dateObj = new Date(date as string);
+      const result = await this.orgUseCases.getPriceBySelectDay(dateObj, organizerId as string);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ error: 'error occured while getting the price of the day' });
     }
   }
 

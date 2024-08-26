@@ -10,6 +10,7 @@ import bcryptjs from 'bcryptjs';
 import { EventHallDetails, OrganizerDetails, EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
+import { BookingEntity, BookingPrices } from '../../interfaces/bookingEventHall';
 
 
 
@@ -17,11 +18,23 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   private orgModel: Model<OrgEntity & Document>;
   private postModel: Model<OrgPostDocument>;
+  private BookingModel: Model<BookingEntity>
 
 
-  constructor(postModel: Model<OrgPostDocument>) {
-    this.orgModel = OrgModel;
+  // constructor(postModel: Model<OrgPostDocument>) {
+  //   this.orgModel = OrgModel;
+  //   this.postModel = postModel;
+  //   this.BookingModel = BookingModel;
+  // }
+
+  constructor(
+    orgModel: Model<OrgEntity & Document>,
+    postModel: Model<OrgPostDocument>,
+    BookingModel: Model<BookingEntity>
+  ) {
+    this.orgModel = orgModel;
     this.postModel = postModel;
+    this.BookingModel = BookingModel;
   }
 
 
@@ -892,6 +905,68 @@ export class MongoDBOrgRepository implements OrgRepository {
       throw new Error('Error updating post');
     }
   }
+
+   async addPriceBySelectDay({ date, organizerId, prices }: { 
+    date: Date; 
+    organizerId: Types.ObjectId; 
+    prices: BookingPrices 
+  }): Promise<BookingEntity | null> {
+    try {
+      const filter = {
+        organizerId: organizerId,
+        bookingDate: date,
+      };
+
+      const update = {
+        $set: {
+          organizerId: organizerId,
+          bookingDate: date,
+          'prices.dayPrice': prices.dayPrice,
+          'prices.nightPrice': prices.nightPrice,
+          'prices.fullDayPrice': prices.fullDayPrice,
+        },
+      };
+
+      const options = {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      };
+
+      const result = await this.BookingModel.findOneAndUpdate(filter, update, options);
+      return result;
+    } catch (error) {
+      console.error('Error in addPriceBySelectDay:', error);
+      return null;
+    }
+  }
+
+  async getPriceBySelectDay(filter: { date: Date, organizerId: Types.ObjectId }): Promise<BookingEntity | null> {
+    try {
+        const startOfDay = new Date(filter.date);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(filter.date);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        const booking = await this.BookingModel.findOne({
+            bookingDate: {
+                $gte: startOfDay, 
+                $lte: endOfDay
+            },
+            organizerId: filter.organizerId 
+        }).exec();
+
+        // console.log('booking: ', booking)
+
+        return booking;
+    } catch (error) {
+        console.error('Error retrieving price:', error);
+        return null;
+    }
+}
+
+
 
 }
 

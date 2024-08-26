@@ -5,11 +5,13 @@ import { MongoDBOrgRepository } from '../../frameworks/repository/MongoDBOrgRepo
 import { authenticateJWT } from '../middleware/orgJWTmiddle';
 import OrgPostModel from '../../entity/models/OrgPostModel';
 import organizerBlock from '../middleware/organizerBlock';
+import OrgModel from '../../entity/models/organizerModel';
+import BookingModel from '../../interfaces/bookingEventHall';
 
 const router = Router();
 
 
-const orgRepository = new MongoDBOrgRepository(OrgPostModel);
+const orgRepository = new MongoDBOrgRepository(OrgModel, OrgPostModel, BookingModel);
 const orgUseCases = new OrgUseCases(orgRepository);
 const orgController = new OrgController(orgUseCases);
 
@@ -40,13 +42,16 @@ router.get('/view-post/:organizerId', organizerBlock, authenticateJWT, (req, res
 
 router.patch('/update-post/:organizerId', organizerBlock, authenticateJWT, (req, res, next) => {
   orgController.editPost(req, res).catch(next);
-});
+}); // updating details that already added.
 
-router.post('/rules-and-restrictions', organizerBlock, authenticateJWT, 
-  orgController.createRulesAndRestrictions.bind(orgController)
+router.post('/rules-and-restrictions', organizerBlock, authenticateJWT,
+  orgController.createRulesAndRestrictions.bind(orgController) // organizer adding rules and restrictions that show to user.
 );
 
-router.post('/cancellation-policy', orgController.cancellationPolicy.bind(orgController))
+router.post('/cancellation-policy', organizerBlock, authenticateJWT,  orgController.cancellationPolicy.bind(orgController)); //organizer adding cancellation policy that show to user.
+
+router.post('/events/prices', orgController.addPriceBySelectDay.bind(orgController));
+router.get('/events/prices', orgController.getPriceBySelectDay.bind(orgController));
 
 
 

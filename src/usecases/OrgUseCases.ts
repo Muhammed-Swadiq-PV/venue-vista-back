@@ -3,9 +3,11 @@ import { OrgEntity } from '../entity/models/OrgEntity';
 import { OrgPostEntity } from '../entity/models/OrgPostEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 import { GetPresignedUrlUseCase } from './GetPresignedUrlUseCases';
-import  mongoose, { Types}from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
+import { BookingPrices } from '../interfaces/bookingEventHall';
+import { BookingEntity } from '../interfaces/bookingEventHall';
 
 export class OrgUseCases {
   private orgRepository: OrgRepository;
@@ -129,17 +131,17 @@ export class OrgUseCases {
 
   async saveLocation(organizerId: string, location: { lat: number; lng: number }): Promise<OrgEntity | null> {
     const existingOrganizer = await this.orgRepository.findProfileById(organizerId);
-    
+
     if (!existingOrganizer) {
       throw new Error('Organizer not found');
     }
 
     const updatedOrganizer = await this.orgRepository.updateLocation(organizerId, location);
-    
+
     return updatedOrganizer;
   }
 
-  
+
   async viewProfile(organizerId: string): Promise<OrgEntity | null> {
     const organizerProfile = await this.orgRepository.findProfileById(organizerId);
     return organizerProfile;
@@ -199,9 +201,9 @@ export class OrgUseCases {
     return result;
   }
 
-  async createRulesAndRestrictions(rules: string, organizerId:string): Promise<OrgEntity | null> {
+  async createRulesAndRestrictions(rules: string, organizerId: string): Promise<OrgEntity | null> {
     try {
-      const  orgObjectId = new Types.ObjectId(organizerId);
+      const orgObjectId = new Types.ObjectId(organizerId);
       console.log(orgObjectId, 'orgObjectId')
       const existingOrganizer = await this.orgRepository.findById(orgObjectId);
 
@@ -209,10 +211,10 @@ export class OrgUseCases {
         console.log('Organizer not found');
         return null;
       }
-      return await this.orgRepository.saveRulesAndRestrictions({rules, organizerId: orgObjectId});
+      return await this.orgRepository.saveRulesAndRestrictions({ rules, organizerId: orgObjectId });
     } catch (error) {
       console.error('Invalid ObjectId:', error);
-      return null; 
+      return null;
     }
   }
 
@@ -221,12 +223,50 @@ export class OrgUseCases {
       const orgObjectId = new Types.ObjectId(organizerId);
       const existingOrganizer = await this.orgRepository.findById(orgObjectId);
 
-      if(!existingOrganizer){
+      if (!existingOrganizer) {
         console.log('organizer not found');
         return null;
       }
-      return await this.orgRepository.cancellationPolicy({ policy, organizerId:orgObjectId})
+      return await this.orgRepository.cancellationPolicy({ policy, organizerId: orgObjectId })
     } catch (error) {
+      return null;
+    }
+  }
+
+  async addPriceBySelectDay(date: Date, organizerId: string, prices: BookingPrices): Promise<BookingEntity | null> {
+    try {
+      const orgObjectId = new Types.ObjectId(organizerId);
+      const existingOrganizer = await this.orgRepository.findById(orgObjectId);
+
+      if (!existingOrganizer) {
+        console.log('organizer not found');
+        return null;
+      }
+      return await this.orgRepository.addPriceBySelectDay({ date, organizerId: orgObjectId, prices });
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getPriceBySelectDay(date: Date, organizerId: string): Promise<BookingEntity | null> {
+    try {
+      const orgObjectId = new Types.ObjectId(organizerId);
+      const existingOrganizer = await this.orgRepository.findById(orgObjectId);
+
+      if (!existingOrganizer) {
+        console.log('organizer not found');
+        return null;
+      }
+
+      const booking = await this.orgRepository.getPriceBySelectDay({ date, organizerId: orgObjectId });
+      if (booking) {
+        return booking;
+      } else {
+        console.log('No booking found for the given date');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error in getting price by selected day:', error);
       return null;
     }
   }

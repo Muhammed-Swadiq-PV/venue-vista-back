@@ -5,6 +5,7 @@ import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrg
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
 import { ObjectId } from 'mongodb';
+import { BookingEntity, BookingPrices } from '../../interfaces/bookingEventHall';
 
 
 export interface OrgRepository {
@@ -22,8 +23,13 @@ export interface OrgRepository {
 
     // Post-related methods
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;
+
     saveRulesAndRestrictions(data: { rules: string, organizerId: ObjectId }): Promise<OrgEntity | null>;
     cancellationPolicy(data: { policy: string, organizerId: ObjectId }): Promise<OrgEntity | null>
+
+    //booking related tasks
+    addPriceBySelectDay(data: { date: Date, organizerId: ObjectId, prices: BookingPrices }): Promise<BookingEntity | null>;
+    getPriceBySelectDay(filter: { date: Date, organizerId: ObjectId }): Promise<BookingEntity | null>
 
     //for admin related tasks
 
