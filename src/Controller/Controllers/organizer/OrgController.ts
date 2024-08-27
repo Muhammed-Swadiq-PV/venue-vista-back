@@ -405,9 +405,6 @@ export class OrgController {
   async getPriceBySelectDay(req: Request, res: Response): Promise<void> {
     try {
       const { date, organizerId } = req.query;
-      console.log(date)
-      console.log(typeof(organizerId))
-      console.log(organizerId)
       const dateObj = new Date(date as string);
       const result = await this.orgUseCases.getPriceBySelectDay(dateObj, organizerId as string);
       res.status(200).json(result);
@@ -415,5 +412,52 @@ export class OrgController {
       res.status(500).json({ error: 'error occured while getting the price of the day' });
     }
   }
+
+  async getEventsDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const { start, end, organizerId } = req.query;
+
+      if (!start || !end || !organizerId) {
+        res.status(400).json({ error: 'Missing required parameters' });
+        return;
+      }
+
+      const startDate = new Date(start as string);
+      const endDate = new Date(end as string);
+
+      const month = startDate.getMonth() + 1; // getMonth() returns 0-11, so we add 1
+      const year = startDate.getFullYear();
+
+      const result = await this.orgUseCases.getEventsDetails(
+        startDate,
+        endDate,
+        month,
+        year,
+        organizerId as string
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ error: 'error occured while getting events booked details' })
+    }
+  }
+
+  async createDefaultPrice(req: Request, res: Response): Promise<void> {
+    try{
+    const { organizerId, weeklyPrices } = req.body;
+
+    // console.log(weeklyPrices, 'weekly prices')
+    if(!organizerId || !weeklyPrices){
+      res.status(400).json({error: 'missing required data'});
+      return;
+    }
+     await this.orgUseCases.createDefaultPrice(organizerId, weeklyPrices)
+    res.status(200).json({ message: 'Default weekly prices updated successfully' })
+  } catch(error){
+    console.error('Error in createDefaultPrice:', error);
+    res.status(500).json({ error: 'Failed to update weekly prices. Please try again.' });
+  }
+}
+
 
 }

@@ -6,7 +6,7 @@ import { authenticateJWT } from '../middleware/orgJWTmiddle';
 import OrgPostModel from '../../entity/models/OrgPostModel';
 import organizerBlock from '../middleware/organizerBlock';
 import OrgModel from '../../entity/models/organizerModel';
-import BookingModel from '../../interfaces/bookingEventHall';
+import BookingModel from '../../entity/models/weeklyBookingModel';
 
 const router = Router();
 
@@ -44,14 +44,17 @@ router.patch('/update-post/:organizerId', organizerBlock, authenticateJWT, (req,
   orgController.editPost(req, res).catch(next);
 }); // updating details that already added.
 
+// booking related routes
 router.post('/rules-and-restrictions', organizerBlock, authenticateJWT,
   orgController.createRulesAndRestrictions.bind(orgController) // organizer adding rules and restrictions that show to user.
 );
 
 router.post('/cancellation-policy', organizerBlock, authenticateJWT,  orgController.cancellationPolicy.bind(orgController)); //organizer adding cancellation policy that show to user.
 
-router.post('/events/prices', orgController.addPriceBySelectDay.bind(orgController));
-router.get('/events/prices', orgController.getPriceBySelectDay.bind(orgController));
+router.post('/events/prices', organizerBlock, authenticateJWT,  orgController.addPriceBySelectDay.bind(orgController));
+router.get('/events/prices', organizerBlock, authenticateJWT, orgController.getPriceBySelectDay.bind(orgController));
+router.get('/events', orgController.getEventsDetails.bind(orgController)); /////////////////////////////////////########////////
+router.post('/default-prices', orgController.createDefaultPrice.bind(orgController));
 
 
 

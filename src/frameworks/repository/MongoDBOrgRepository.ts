@@ -10,7 +10,7 @@ import bcryptjs from 'bcryptjs';
 import { EventHallDetails, OrganizerDetails, EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
-import { BookingEntity, BookingPrices } from '../../interfaces/bookingEventHall';
+import { BookingWeeklyEntity, BookingPrices } from '../../interfaces/weeklyPrices';
 
 
 
@@ -18,7 +18,7 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   private orgModel: Model<OrgEntity & Document>;
   private postModel: Model<OrgPostDocument>;
-  private BookingModel: Model<BookingEntity>
+  private BookingModel: Model<BookingWeeklyEntity>
 
 
   // constructor(postModel: Model<OrgPostDocument>) {
@@ -30,7 +30,7 @@ export class MongoDBOrgRepository implements OrgRepository {
   constructor(
     orgModel: Model<OrgEntity & Document>,
     postModel: Model<OrgPostDocument>,
-    BookingModel: Model<BookingEntity>
+    BookingModel: Model<BookingWeeklyEntity>
   ) {
     this.orgModel = orgModel;
     this.postModel = postModel;
@@ -910,7 +910,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     date: Date; 
     organizerId: Types.ObjectId; 
     prices: BookingPrices 
-  }): Promise<BookingEntity | null> {
+  }): Promise<BookingWeeklyEntity | null> {
     try {
       const filter = {
         organizerId: organizerId,
@@ -941,7 +941,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
-  async getPriceBySelectDay(filter: { date: Date, organizerId: Types.ObjectId }): Promise<BookingEntity | null> {
+  async getPriceBySelectDay(filter: { date: Date, organizerId: Types.ObjectId }): Promise<BookingWeeklyEntity | null> {
     try {
         const startOfDay = new Date(filter.date);
         startOfDay.setUTCHours(0, 0, 0, 0);
@@ -966,6 +966,37 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
 }
 
+
+async getEventsByMonth({ month, year, organizerId }: { month: number, year: number, organizerId: ObjectId }): Promise<BookingWeeklyEntity[] | null> {
+  try {
+      const startDate = new Date(year, month - 1, 1); // 1st day of the month
+      const endDate = new Date(year, month, 0); // Last day of the month
+
+      const events = await this.BookingModel.find({
+          organizerId,
+          bookingDate: { $gte: startDate, $lte: endDate }
+      }).exec();
+
+      return events.length > 0 ? events : null;
+  } catch (error) {
+      console.error('Error fetching events by month:', error);
+      throw new Error('Error fetching events from database');
+  }
+}
+
+async createDefaultPrice(data: { organizerId: Types.ObjectId, weeklyPrices: Record<string, BookingPrices> }): Promise<BookingWeeklyEntity | null> {
+  try {
+    const updatedBooking = await this.BookingModel.findOneAndUpdate(
+      { organizerId: data.organizerId },
+      { $set: { weeklyPrices: data.weeklyPrices } },
+      { upsert: true, new: true } // Create if not exists and return the updated document
+    );
+    return updatedBooking;
+  } catch (error) {
+    console.error('Error in createDefaultPrice repository method:', error);
+    throw new Error('Database operation failed');
+  }
+}
 
 
 }

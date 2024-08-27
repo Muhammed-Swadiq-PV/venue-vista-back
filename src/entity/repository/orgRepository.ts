@@ -5,7 +5,7 @@ import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrg
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
 import { ObjectId } from 'mongodb';
-import { BookingEntity, BookingPrices } from '../../interfaces/bookingEventHall';
+import { BookingWeeklyEntity, BookingPrices, } from '../../interfaces/weeklyPrices';
 
 
 export interface OrgRepository {
@@ -28,9 +28,11 @@ export interface OrgRepository {
     cancellationPolicy(data: { policy: string, organizerId: ObjectId }): Promise<OrgEntity | null>
 
     //booking related tasks
-    addPriceBySelectDay(data: { date: Date, organizerId: ObjectId, prices: BookingPrices }): Promise<BookingEntity | null>;
-    getPriceBySelectDay(filter: { date: Date, organizerId: ObjectId }): Promise<BookingEntity | null>
-
+    addPriceBySelectDay(data: { date: Date, organizerId: ObjectId, prices: BookingPrices }): Promise<BookingWeeklyEntity | null>;
+    getPriceBySelectDay(filter: { date: Date, organizerId: ObjectId }): Promise<BookingWeeklyEntity | null>;
+    getEventsByMonth({ month, year, organizerId }: { month: number, year: number, organizerId: ObjectId }): Promise<BookingWeeklyEntity[] | null>;
+    createDefaultPrice(data: { organizerId: ObjectId, weeklyPrices: Record<string, BookingPrices> }): Promise<BookingWeeklyEntity | null>
+    
     //for admin related tasks
 
     fetchOrganizers(page: number, limit: number): Promise<{ organizers: OrgEntity[], totalPages: number }>
