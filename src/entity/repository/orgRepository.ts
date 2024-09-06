@@ -27,12 +27,13 @@ export interface OrgRepository {
     saveRulesAndRestrictions(data: { rules: string, organizerId: ObjectId }): Promise<OrgEntity | null>;
     cancellationPolicy(data: { policy: string, organizerId: ObjectId }): Promise<OrgEntity | null>
 
+
     //booking related tasks
     addPriceBySelectDay(data: { date: Date, organizerId: ObjectId, prices: BookingPrices }): Promise<BookingWeeklyEntity | null>;
     getPriceBySelectDay(filter: { date: Date, organizerId: ObjectId }): Promise<BookingWeeklyEntity | null>;
     getEventsByMonth({ month, year, organizerId }: { month: number, year: number, organizerId: ObjectId }): Promise<BookingWeeklyEntity[] | null>;
     createDefaultPrice(data: { organizerId: ObjectId, weeklyPrices: Record<string, BookingPrices> }): Promise<BookingWeeklyEntity | null>
-    
+
     //for admin related tasks
 
     fetchOrganizers(page: number, limit: number): Promise<{ organizers: OrgEntity[], totalPages: number }>
@@ -49,6 +50,8 @@ export interface OrgRepository {
     findOrganizerWithEventHallByName(name: string): Promise<EventHallAndOrganizerArray | null>
 
     getOrganizerName(postId: string): Promise<{ organizerId: string; organizerName: string } | null>
+    getOrganizerNameAndRules(organizerId: string): Promise<{ organizerName: string;phoneNumber?: string; rulesAndRestrictions?: string; paymentPolicy?: string } | null>
+    getOrganizerDetails(postId: string): Promise<{ carParkingSpace: number; bikeParkingSpace: number; indoorSeatingCapacity: number; diningCapacity: number} | null >
     getOrganizerIdfrompostId(hallId: string): Promise<string | null>;
     getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null>;
 

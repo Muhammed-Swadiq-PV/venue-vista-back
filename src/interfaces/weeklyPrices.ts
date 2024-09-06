@@ -15,6 +15,7 @@ export interface WeeklyPrices {
     Friday: BookingPrices;
     Saturday: BookingPrices;
     Sunday: BookingPrices;
+    [key: string]: BookingPrices;
 }
 
 export interface BookingWeeklyEntity extends Document {

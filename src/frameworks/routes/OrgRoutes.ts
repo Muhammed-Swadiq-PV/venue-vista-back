@@ -50,8 +50,10 @@ router.post('/rules-and-restrictions', organizerBlock, authenticateJWT,
 );
 
 router.post('/cancellation-policy', organizerBlock, authenticateJWT,  orgController.cancellationPolicy.bind(orgController)); //organizer adding cancellation policy that show to user.
+router.get('/cancellation-policy', organizerBlock, authenticateJWT, orgController.getCancellationPolicy.bind(orgController));
+router.get('/rules-and-restrictions', organizerBlock, authenticateJWT, orgController.getRulesAndRestrictions.bind(orgController))
 
-router.post('/events/prices', organizerBlock, authenticateJWT,  orgController.addPriceBySelectDay.bind(orgController));
+router.post('/events/prices',  orgController.addPriceBySelectDay.bind(orgController));
 router.get('/events/prices', organizerBlock, authenticateJWT, orgController.getPriceBySelectDay.bind(orgController));
 router.get('/events', orgController.getEventsDetails.bind(orgController)); /////////////////////////////////////########////////
 router.post('/default-prices', orgController.createDefaultPrice.bind(orgController));

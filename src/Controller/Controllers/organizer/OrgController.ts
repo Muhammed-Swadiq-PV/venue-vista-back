@@ -390,6 +390,36 @@ export class OrgController {
     }
   }
 
+  async getCancellationPolicy(req: Request, res: Response): Promise<void> {
+    try {
+      const organizerId = req.query.organizerId as string;
+      const response = await this.orgUseCases.getCancellationPolicy(organizerId);
+      if (response) {
+        res.status(200).json({ policy: response.paymentPolicy });
+      } else {
+        res.status(404).json({ error: 'Organizer not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Error occurred while getting cancellation policy' });
+    }
+  }
+
+  async getRulesAndRestrictions(req: Request, res: Response): Promise<void> {
+    try {
+      const organizerId = req.query.organizerId as string;
+      const response = await this.orgUseCases.getCancellationPolicy(organizerId);
+
+      if (response) {
+        res.status(200).json({ rules: response.rulesAndRestrictions });
+      } else {
+        res.status(404).json({ error: 'Organizer not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Error occured while getting rules and restrictions' });
+    }
+  }
+
+
   async addPriceBySelectDay(req: Request, res: Response): Promise<void> {
     try {
       const { date, organizerId, dayPrice, nightPrice, fullDayPrice }: { date: string; organizerId: string; dayPrice: number; nightPrice: number; fullDayPrice: number } = req.body;
@@ -405,8 +435,10 @@ export class OrgController {
   async getPriceBySelectDay(req: Request, res: Response): Promise<void> {
     try {
       const { date, organizerId } = req.query;
+      // console.log(date, organizerId)
       const dateObj = new Date(date as string);
       const result = await this.orgUseCases.getPriceBySelectDay(dateObj, organizerId as string);
+      console.log(result)
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({ error: 'error occured while getting the price of the day' });
@@ -443,21 +475,21 @@ export class OrgController {
   }
 
   async createDefaultPrice(req: Request, res: Response): Promise<void> {
-    try{
-    const { organizerId, weeklyPrices } = req.body;
+    try {
+      const { organizerId, weeklyPrices } = req.body;
 
-    // console.log(weeklyPrices, 'weekly prices')
-    if(!organizerId || !weeklyPrices){
-      res.status(400).json({error: 'missing required data'});
-      return;
+      // console.log(weeklyPrices, 'weekly prices')
+      if (!organizerId || !weeklyPrices) {
+        res.status(400).json({ error: 'missing required data' });
+        return;
+      }
+      await this.orgUseCases.createDefaultPrice(organizerId, weeklyPrices)
+      res.status(200).json({ message: 'Default weekly prices updated successfully' })
+    } catch (error) {
+      console.error('Error in createDefaultPrice:', error);
+      res.status(500).json({ error: 'Failed to update weekly prices. Please try again.' });
     }
-     await this.orgUseCases.createDefaultPrice(organizerId, weeklyPrices)
-    res.status(200).json({ message: 'Default weekly prices updated successfully' })
-  } catch(error){
-    console.error('Error in createDefaultPrice:', error);
-    res.status(500).json({ error: 'Failed to update weekly prices. Please try again.' });
   }
-}
 
 
 }

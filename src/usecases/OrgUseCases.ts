@@ -6,8 +6,8 @@ import { GetPresignedUrlUseCase } from './GetPresignedUrlUseCases';
 import mongoose, { Types } from 'mongoose';
 import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
-import { BookingPrices } from '../interfaces/weeklyPrices'; 
-import { BookingWeeklyEntity } from '../interfaces/weeklyPrices'; 
+import { BookingPrices } from '../interfaces/weeklyPrices';
+import { BookingWeeklyEntity } from '../interfaces/weeklyPrices';
 import BookingModel from '../entity/models/weeklyBookingModel';
 
 export class OrgUseCases {
@@ -228,11 +228,30 @@ export class OrgUseCases {
         console.log('organizer not found');
         return null;
       }
-      return await this.orgRepository.cancellationPolicy({ policy, organizerId: orgObjectId })
+      return await this.orgRepository.cancellationPolicy({ policy, organizerId: orgObjectId });
     } catch (error) {
       return null;
     }
   }
+
+  async getCancellationPolicy(organizerId: string): Promise<OrgEntity | null> {
+    try {
+        const orgObjectId = new Types.ObjectId(organizerId);
+        const existingOrganizer = await this.orgRepository.findById(orgObjectId);
+
+        if (!existingOrganizer) {
+            console.log('Organizer not found');
+            return null;
+        }
+
+        return existingOrganizer; 
+    } catch (error) {
+        console.error('Error fetching cancellation policy:', error);
+        return null;
+    }
+}
+
+
 
   async addPriceBySelectDay(date: Date, organizerId: string, prices: BookingPrices): Promise<BookingWeeklyEntity | null> {
     try {
@@ -249,11 +268,11 @@ export class OrgUseCases {
     }
   }
 
-  async getPriceBySelectDay(date: Date, organizerId: string): Promise<BookingWeeklyEntity | null> {
+  async getPriceBySelectDay(date: Date, organizerId: string): Promise<BookingWeeklyEntity | null > {
     try {
       const orgObjectId = new Types.ObjectId(organizerId);
       const existingOrganizer = await this.orgRepository.findById(orgObjectId);
-
+      // console.log(existingOrganizer)
       if (!existingOrganizer) {
         console.log('organizer not found');
         return null;
@@ -281,34 +300,34 @@ export class OrgUseCases {
         console.log('organizer not found');
         return null;
       }
-        const events = await this.orgRepository.getEventsByMonth({month, year, organizerId: orgObjectId});
-        return events;
+      const events = await this.orgRepository.getEventsByMonth({ month, year, organizerId: orgObjectId });
+      return events;
     } catch (error) {
-        throw new Error('Error fetching events details');
+      throw new Error('Error fetching events details');
     }
-}
+  }
 
-async createDefaultPrice(organizerId: string, weeklyPrices: Record<string, BookingPrices>): Promise<void> {
-  try {
-    const orgObjectId = new Types.ObjectId(organizerId);
-    const existingOrganizer = await this.orgRepository.findById(orgObjectId);
+  async createDefaultPrice(organizerId: string, weeklyPrices: Record<string, BookingPrices>): Promise<void> {
+    try {
+      const orgObjectId = new Types.ObjectId(organizerId);
+      const existingOrganizer = await this.orgRepository.findById(orgObjectId);
 
-    if(!existingOrganizer) {
-      console.log('organizer not found');
-      throw new Error('Organizer not found');
+      if (!existingOrganizer) {
+        console.log('organizer not found');
+        throw new Error('Organizer not found');
+      }
+      // const defaultPrice = await this.orgRepository.createDefaultPrice({organizerId: orgObjectId, weeklyPrices})
+      await BookingModel.findOneAndUpdate(
+        { organizerId: orgObjectId },
+        { $set: { weeklyPrices } },
+        { upsert: true, new: true }
+      )
+      console.log('Default prices updated successfully');
     }
-    // const defaultPrice = await this.orgRepository.createDefaultPrice({organizerId: orgObjectId, weeklyPrices})
-    await BookingModel.findOneAndUpdate(
-      {organizerId: orgObjectId},
-      {$set: { weeklyPrices} },
-      { upsert: true, new: true}
-    )
-    console.log('Default prices updated successfully');
+    catch (error) {
+      console.error('Error in createDefaultPrice:', error);
+      throw new Error('Failed to update default prices');
+    }
+
   }
-  catch (error) {
-    console.error('Error in createDefaultPrice:', error);
-    throw new Error('Failed to update default prices');
-  }
-    
-}
 }

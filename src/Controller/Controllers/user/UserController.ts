@@ -198,23 +198,23 @@ export class UserController {
     try {
       const searchTerm = req.query.search as string;
 
-      if(!searchTerm){
-      res.status(400).json({message: 'Search term is required'});
-      return;
+      if (!searchTerm) {
+        res.status(400).json({ message: 'Search term is required' });
+        return;
       }
       const eventHalls = await this.userUseCases.searchEventHallByName(searchTerm);
 
       res.status(200).json(eventHalls);
     } catch (error) {
       console.error('Error fetching hall details', error);
-      res.status(500).json({message: ' Internal server error'});
+      res.status(500).json({ message: ' Internal server error' });
     }
   }
 
 
   getOrganizerByLocation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { lat, lon} = req.query;
+      const { lat, lon } = req.query;
 
       if (typeof lat !== 'string' || typeof lon !== 'string') {
         res.status(400).json({ message: 'Invalid latitude or longitude' });
@@ -270,6 +270,38 @@ export class UserController {
     }
   }
 
+  getOrganizerNameAndRules = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const organizerId = req.params.organizerId;
+      const name = await this.userUseCases.getOrganizerNameAndRules(organizerId);
+
+      if(!name) {
+        res.status(404).json({ message: 'organizer name not found' });
+        return;
+      }
+      res.status(200).json(name);
+    } catch (error) {
+      console.error('Error fetching organizer name:', error);
+      res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+  }
+
+  getOrganizerDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const postId = req.params.postId;
+      const details = await this.userUseCases.getOrganizerDetails(postId);
+
+      if(!details) {
+        res.status(404).json({message: 'organizer post details not found'});
+        return;
+      }
+      res.status(200).json(details);
+    } catch (error) {
+      console.error('Error fetching organizer post details');
+      res.status(500).json({message: 'An unexpected error occured'});
+    }
+  }
+
 
   singleHallDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -310,7 +342,7 @@ export class UserController {
   async postProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.params.userId;
-      const profileData = req.body; // This will contain address, city, pin, district, mobileNumber, etc.
+      const profileData = req.body;
 
       const updatedUser = await this.userUseCases.updateUserProfile(userId, profileData);
 
@@ -323,5 +355,53 @@ export class UserController {
       next(error);
     }
   }
+
+  async getPriceDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const organizerId = req.params.organizerId;
+      const selectedDate = new Date(req.params.selectedDate);
+      const priceDetails = await this.userUseCases.getPriceDetails(organizerId, selectedDate);
+      if(priceDetails){
+        res.status(200).json(priceDetails);
+      }
+    } catch (error) {
+      res.status(500).json({message: 'Internal server error'});
+    }
+  }
+
+  async createBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const bookingData = req.body;
+      const result = await this.userUseCases.createBooking(bookingData);
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message});
+    }
+  }
+
+  // async getBookingDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
+  //   try {
+  //     const {organizerId} = req.params;
+  //     const {date }= req.query;
+
+  //     if(!organizerId || !date){
+  //       res.status(400).json({message: 'Organizer id and date are required'});
+  //       return;
+  //     }
+
+  //     const bookingDetails = await this.userUseCases.getBookingDetails(organizerId, date);
+
+  //     if (!bookingDetails || bookingDetails.length === 0) {
+  //       res.status(404).json({ message: 'No bookings found for this date' });
+  //       return;
+  //     }
+
+  //     res.status(200).json(bookingDetails);
+
+  //   } catch (error) {
+  //     console.error('Error fetching booking details: ', error);
+  //     res.status(500).json({message: 'Internal server error'});
+  //   }
+  // }
 
 }

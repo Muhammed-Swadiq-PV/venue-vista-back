@@ -4,7 +4,7 @@ import { OrgPostEntity } from '../../entity/models/OrgPostEntity';
 import { OrgPostDocument } from '../../entity/models/OrgPostDocument';
 import OrgPostModel from '../../entity/models/OrgPostModel';
 import { ObjectId } from 'mongodb';
-import mongoose, { Schema, Document, Model, Types } from 'mongoose';
+import mongoose, { Schema, Document, Model, Types, mongo } from 'mongoose';
 import OrgModel from '../../entity/models/organizerModel';
 import bcryptjs from 'bcryptjs';
 import { EventHallDetails, OrganizerDetails, EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
@@ -20,12 +20,6 @@ export class MongoDBOrgRepository implements OrgRepository {
   private postModel: Model<OrgPostDocument>;
   private BookingModel: Model<BookingWeeklyEntity>
 
-
-  // constructor(postModel: Model<OrgPostDocument>) {
-  //   this.orgModel = OrgModel;
-  //   this.postModel = postModel;
-  //   this.BookingModel = BookingModel;
-  // }
 
   constructor(
     orgModel: Model<OrgEntity & Document>,
@@ -654,8 +648,8 @@ export class MongoDBOrgRepository implements OrgRepository {
         throw new Error('Invalid Post ID format');
       }
 
-      const postObjectId = new mongoose.Types.ObjectId(postId);
-      const post = await this.postModel.findById(postObjectId).select('organizerId').exec();
+      const objectId = new mongoose.Types.ObjectId(postId);
+      const post = await this.postModel.findById(objectId).select('organizerId').exec();
 
       if (!post) {
         console.log('Post not found');
@@ -665,8 +659,6 @@ export class MongoDBOrgRepository implements OrgRepository {
       const { organizerId } = post;
 
       const organizer = await this.orgModel.findById(organizerId).select('name').exec();
-      console.log(organizer?.name, 'organizer')
-
       if (!organizer) {
         console.log('Organizer not found');
         return null;
@@ -679,7 +671,47 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
+  async getOrganizerNameAndRules(organizerId: string): Promise<{ organizerName: string; phoneNumber?: string; rulesAndRestrictions?: string; paymentPolicy?: string } | null> {
+    try {
+      const objectId = new mongoose.Types.ObjectId(organizerId);
+      const organizer = await this.orgModel.findById(objectId).select('name phoneNumber rulesAndRestrictions paymentPolicy').exec();
 
+      if (!organizer) {
+        console.log('Organizer not found');
+        return null;
+      }
+
+      return { 
+         organizerName: organizer.name,
+         phoneNumber: organizer.phoneNumber,
+        rulesAndRestrictions: organizer.rulesAndRestrictions || '',
+        paymentPolicy: organizer.paymentPolicy || ''
+      }
+    } catch (error) {
+      console.error('Error fetching organizer name:', error);
+      throw new Error('Failed to fetch organizer name');
+    }
+  }
+
+  async getOrganizerDetails(postId: string): Promise<{ carParkingSpace: number; bikeParkingSpace: number; indoorSeatingCapacity: number; diningCapacity: number} | null > {
+    try {
+      const objectId = new mongoose.Types.ObjectId(postId);
+      const details = await this.postModel.findById(objectId).select('parking indoor dining').exec();
+
+      if(!details){
+        return null;
+      }
+      return {
+        carParkingSpace: details.parking?.carParkingSpace || 0,
+        bikeParkingSpace: details.parking?.bikeParkingSpace || 0,
+        indoorSeatingCapacity: details.indoor?.seatingCapacity || 0,
+        diningCapacity: details.dining?.diningCapacity || 0,
+      };
+    } catch (error) {
+      console.error('Error fetching organizer details:', error);
+      throw new Error('Failed to fetch organizer details');
+    }
+  }
 
 
   async getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null> {
@@ -906,10 +938,10 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
-   async addPriceBySelectDay({ date, organizerId, prices }: { 
-    date: Date; 
-    organizerId: Types.ObjectId; 
-    prices: BookingPrices 
+  async addPriceBySelectDay({ date, organizerId, prices }: {
+    date: Date;
+    organizerId: Types.ObjectId;
+    prices: BookingPrices
   }): Promise<BookingWeeklyEntity | null> {
     try {
       const filter = {
@@ -943,60 +975,90 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async getPriceBySelectDay(filter: { date: Date, organizerId: Types.ObjectId }): Promise<BookingWeeklyEntity | null> {
     try {
-        const startOfDay = new Date(filter.date);
-        startOfDay.setUTCHours(0, 0, 0, 0);
+      const startOfDay = new Date(filter.date);
+      startOfDay.setUTCHours(0, 0, 0, 0);
 
-        const endOfDay = new Date(filter.date);
-        endOfDay.setUTCHours(23, 59, 59, 999);
+      const endOfDay = new Date(filter.date);
+      endOfDay.setUTCHours(23, 59, 59, 999);
 
-        const booking = await this.BookingModel.findOne({
-            bookingDate: {
-                $gte: startOfDay, 
-                $lte: endOfDay
-            },
-            organizerId: filter.organizerId 
-        }).exec();
+      // Find booking details for the specific date and organizer
+      const priceDetails = await this.BookingModel.findOne({
+        bookingDate: {
+          $gte: startOfDay,
+          $lte: endOfDay
+        },
+        organizerId: filter.organizerId
+      }).exec();
 
-        // console.log('booking: ', booking)
+      // If booking details are found, return them
+      if (priceDetails) {
+        return priceDetails;
+      }
 
-        return booking;
+      // If no specific booking details are found, find a default document for the organizer
+      const dayOfWeek = new Date(filter.date).toLocaleString('en-IN', { weekday: 'long' });
+      const defaultPrices = await this.BookingModel.findOne({
+        organizerId: filter.organizerId,
+        [`weeklyPrices.${dayOfWeek}`]: { $exists: true }
+      }).exec();
+
+      // Return the default prices document if found
+      if (defaultPrices) {
+        const weeklyPrice = defaultPrices.weeklyPrices?.[dayOfWeek] || defaultPrices.prices;
+        const mergedDocument = new this.BookingModel({
+          organizerId: defaultPrices.organizerId,
+          userId: defaultPrices.userId,
+          bookingDate: filter.date,
+          bookingTime: defaultPrices.bookingTime,
+          eventName: defaultPrices.eventName,
+          bookedAt: new Date(),
+          prices: weeklyPrice,
+          weeklyPrices: defaultPrices.weeklyPrices
+        });
+        return mergedDocument;
+      }
+
+      // If no price details are found, return null
+      return null;
     } catch (error) {
-        console.error('Error retrieving price:', error);
-        return null;
+      console.error('Error retrieving price:', error);
+      return null;
     }
-}
+  }
 
 
-async getEventsByMonth({ month, year, organizerId }: { month: number, year: number, organizerId: ObjectId }): Promise<BookingWeeklyEntity[] | null> {
-  try {
+
+
+  async getEventsByMonth({ month, year, organizerId }: { month: number, year: number, organizerId: ObjectId }): Promise<BookingWeeklyEntity[] | null> {
+    try {
       const startDate = new Date(year, month - 1, 1); // 1st day of the month
       const endDate = new Date(year, month, 0); // Last day of the month
 
       const events = await this.BookingModel.find({
-          organizerId,
-          bookingDate: { $gte: startDate, $lte: endDate }
+        organizerId,
+        bookingDate: { $gte: startDate, $lte: endDate }
       }).exec();
 
       return events.length > 0 ? events : null;
-  } catch (error) {
+    } catch (error) {
       console.error('Error fetching events by month:', error);
       throw new Error('Error fetching events from database');
+    }
   }
-}
 
-async createDefaultPrice(data: { organizerId: Types.ObjectId, weeklyPrices: Record<string, BookingPrices> }): Promise<BookingWeeklyEntity | null> {
-  try {
-    const updatedBooking = await this.BookingModel.findOneAndUpdate(
-      { organizerId: data.organizerId },
-      { $set: { weeklyPrices: data.weeklyPrices } },
-      { upsert: true, new: true } // Create if not exists and return the updated document
-    );
-    return updatedBooking;
-  } catch (error) {
-    console.error('Error in createDefaultPrice repository method:', error);
-    throw new Error('Database operation failed');
+  async createDefaultPrice(data: { organizerId: Types.ObjectId, weeklyPrices: Record<string, BookingPrices> }): Promise<BookingWeeklyEntity | null> {
+    try {
+      const updatedBooking = await this.BookingModel.findOneAndUpdate(
+        { organizerId: data.organizerId },
+        { $set: { weeklyPrices: data.weeklyPrices } },
+        { upsert: true, new: true } // Create if not exists and return the updated document
+      );
+      return updatedBooking;
+    } catch (error) {
+      console.error('Error in createDefaultPrice repository method:', error);
+      throw new Error('Database operation failed');
+    }
   }
-}
 
 
 }

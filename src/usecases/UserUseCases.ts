@@ -1,18 +1,22 @@
 import { UserRepository } from '../entity/repository/userRepository';
 import { OrgRepository } from '../entity/repository/orgRepository';
+import { BookingRepository } from '../entity/repository/bookingRepository';
 import { UserEntity } from '../entity/models/UserEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer'
 import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../interfaces/eventHallForSearch';
+import { BookingEventHall } from '../interfaces/bookingEventHall';
 
 export class UserUseCases {
   private userRepository: UserRepository;
   private orgRepository: OrgRepository;
+  private bookingRepository: BookingRepository;
 
-  constructor(userRepository: UserRepository, orgRepository: OrgRepository) {
+  constructor(userRepository: UserRepository, orgRepository: OrgRepository, bookingRepository: BookingRepository) {
     this.userRepository = userRepository;
     this.orgRepository = orgRepository;
+    this.bookingRepository = bookingRepository;
   }
 
   async createUser(user: UserEntity): Promise<UserEntity> {
@@ -170,6 +174,40 @@ export class UserUseCases {
     }
   }
 
+  async getOrganizerNameAndRules(organizerId: string): Promise<{ organizerName: string } | null> {
+    try {
+      const organizerName = await this.orgRepository.getOrganizerNameAndRules(organizerId);
+
+      if (!organizerName) {
+        return null;
+      }
+      return organizerName;
+    } catch (error) {
+      console.error('Error fetching organizer name', error);
+      throw new Error('Failed to fetch organizer name');
+    }
+  }
+
+  async getOrganizerDetails(postId: string): Promise<{
+    carParkingSpace: number;
+    bikeParkingSpace: number;
+    indoorSeatingCapacity: number;
+    diningCapacity: number;
+    } | null> {
+    try {
+      const details = await this.orgRepository.getOrganizerDetails(postId);
+
+
+      if (!details) {
+        return null;
+      }
+      return details;
+    } catch (error) {
+      console.error('Error fetching organizer post details', error);
+      throw new Error('Failed to fetch organizer post details');
+    }
+  }
+
   async fetchHallWithOrganizerWithId(hallId: string): Promise<EventHallWithOrganizerId | null> {
 
     const organizerId = await this.orgRepository.getOrganizerIdfrompostId(hallId);
@@ -182,6 +220,19 @@ export class UserUseCases {
     return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
 
+  async createBooking(bookingData: BookingEventHall): Promise<string> {
+    try {
+      const bookingId = await this.bookingRepository.createBooking(bookingData);
+
+      return bookingId;
+    } catch (error) {
+      console.error('Error creating booking', error);
+      throw new Error('Failed to create booking');
+    }
+  }
+
+  // async getBookingDetails(organizerId: string, date: Date): 
+
   async getProfile(userId: string): Promise<UserEntity | null> {
     return this.userRepository.getProfile(userId);
   }
@@ -189,5 +240,20 @@ export class UserUseCases {
   async updateUserProfile(userId: string, profileData: Partial<UserEntity>): Promise<UserEntity | null> {
     return await this.userRepository.updateUserProfile(userId, profileData);
   }
+
+  async getPriceDetails(organizerId: string, selectedDate: Date): Promise<any> {
+    const date = new Date(selectedDate);
+    const dayOfWeek = date.toLocaleDateString('en-IN', { weekday: 'long' });
+    const specificPrice = await this.bookingRepository.findPriceByDate(organizerId, date);
+
+    if (specificPrice) {
+      return specificPrice;
+    }
+
+    const weeklyPrice = await this.bookingRepository.findWeeklyPrice(organizerId, dayOfWeek);
+
+    return weeklyPrice;
+  }
+
 
 }
