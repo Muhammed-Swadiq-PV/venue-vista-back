@@ -6,6 +6,8 @@ import { EventHallWithOrganizerDetails } from '../../../interfaces/eventHallwith
 import { generateUserAccessToken } from '../../../utils/tokenUtils';
 import { generateUserRefreshToken } from '../../../utils/tokenUtils';
 import { saveRefreshToken } from '../../../usecases/RefreshTokenUseCases';
+//payment related
+// import { StripePaymentService } from '../../../frameworks/payment/StripePayment';
 
 dotenv.config();
 
@@ -372,8 +374,34 @@ export class UserController {
   async createBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const bookingData = req.body;
+      // console.log(bookingData, 'booking data')
       const result = await this.userUseCases.createBooking(bookingData);
+      // console.log(result, 'result')
       res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message});
+    }
+  }
+
+
+  async createPayment(req: Request, res: Response): Promise<void> {
+    try {
+      const {amount,currency, payment_method_id} = req.body;
+      // console.log(req.body, 'req.body in controller')
+
+      const result = await this.userUseCases.createPayment(amount, currency, payment_method_id)
+      res.status(200).json(result)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message});
+    }
+  }
+
+  async confirmPayment(req: Request, res: Response): Promise<void> {
+    try {
+      const {paymentIntentId, bookingId} = req.body;
+
+      const result = await this.userUseCases.confirmPayment(paymentIntentId, bookingId)
+      res.status(200).json(result)
     } catch (error: any) {
       res.status(500).json({ error: error.message});
     }

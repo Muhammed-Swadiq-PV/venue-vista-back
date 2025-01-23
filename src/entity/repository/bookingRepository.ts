@@ -1,4 +1,4 @@
-import { BookingEventHall } from "../../interfaces/bookingEventHall";
+import { BookingEntity } from "../../interfaces/bookingEventHall";
 
 export interface BookingRepository{
 
@@ -6,5 +6,7 @@ export interface BookingRepository{
 
     findWeeklyPrice(organizerId: string, dayOfWeek: string): Promise<any | null>
 
-    createBooking(bookingData: BookingEventHall): Promise<string>;
+    createBooking(bookingData: BookingEntity): Promise<{ bookingId: string; status: string }>;
+
+    updateBooking(BookingId: string, updateData: Partial<BookingEntity>): Promise<{ bookingId: string; status: string }>;
 }

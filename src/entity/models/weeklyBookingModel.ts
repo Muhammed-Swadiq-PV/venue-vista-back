@@ -1,13 +1,13 @@
-import { Schema, model } from "mongoose";
+import { Schema, model , Document, Types} from "mongoose";
 import { BookingWeeklyEntity } from "../../interfaces/weeklyPrices";
 
-const BookingSchema = new Schema<BookingWeeklyEntity>({
+const BookingPriceSchema = new Schema<BookingWeeklyEntity>({
     organizerId: { type: Schema.Types.ObjectId, ref: 'Organizer', required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     bookingDate: { type: Date, required: true },
     bookingTime: { type: String, enum: ['day', 'night', 'full'], required: true },
     eventName: { type: String, required: true },
-    bookedAt: { type: Date, default: Date.now },
+    priceAddedAt: { type: Date, default: Date.now },
     prices: {
         dayPrice: { type: Number, required: true },
         nightPrice: { type: Number, required: true },
@@ -53,6 +53,6 @@ const BookingSchema = new Schema<BookingWeeklyEntity>({
     }
 });
 
-const BookingModel = model<BookingWeeklyEntity>('Booking', BookingSchema);
+const BookingPriceModel = model<BookingWeeklyEntity>('BookingPrice', BookingPriceSchema);
 
-export default BookingModel;
+export default BookingPriceModel;

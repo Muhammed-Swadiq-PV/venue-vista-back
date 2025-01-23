@@ -4,12 +4,18 @@ import { AdmUseCases } from '../../usecases/AdmUseCases';
 import { MongoDBAdmRepository } from '../repository/MongoDBAdmRepository';
 import { MongoDBUserRepository } from '../repository/MongoDBUserRepository';
 import { MongoDBOrgRepository } from "../repository/MongoDBOrgRepository";
+import OrgModel from "../../entity/models/organizerModel";
 import OrgPostModel from "../../entity/models/OrgPostModel";
+import BookingPriceModel from "../../entity/models/weeklyBookingModel";
 const router = Router();
 
 const admRepository = new MongoDBAdmRepository();
 const userRepository = new MongoDBUserRepository();
-const orgRepository = new MongoDBOrgRepository(OrgPostModel);
+const orgRepository = new MongoDBOrgRepository(
+    OrgModel,
+    OrgPostModel,
+    BookingPriceModel
+);
 const admUseCases = new AdmUseCases(admRepository, userRepository, orgRepository);
 const admController = new AdmController(admUseCases);
 

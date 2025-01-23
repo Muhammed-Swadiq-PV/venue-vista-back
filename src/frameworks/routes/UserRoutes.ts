@@ -64,6 +64,9 @@ router.post('/profile/:userId', checkBlock,userController.postProfile.bind(userC
 
 router.get('/priceDetails/:organizerId/:selectedDate',authenticateJWT, checkBlock, userController.getPriceDetails.bind(userController));
 router.post('/bookings', userController.createBooking.bind(userController));
+router.post('/create-payment-intent' , userController.createPayment.bind(userController));
+router.post('/confirm-payment', userController.confirmPayment.bind(userController));
+
 
 // router.get('/bookings/:organizerId', userController.getBookingDetails.bind(userController) );
 

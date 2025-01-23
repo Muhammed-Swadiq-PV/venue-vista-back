@@ -24,7 +24,8 @@ export interface BookingWeeklyEntity extends Document {
     bookingDate: Date;
     bookingTime: 'day' | 'night' | 'full';
     eventName: string;
-    bookedAt: Date;
+    priceAddedAt?: Date;
+    status?: 'pending' | 'confirmed' | 'paid' | 'cancelled';
     prices: BookingPrices;
     weeklyPrices?: WeeklyPrices;
 }

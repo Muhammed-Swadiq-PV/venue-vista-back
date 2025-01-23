@@ -6,7 +6,12 @@ import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 import { EventHallWithOrganizerDetails } from '../interfaces/eventHallwithOrganizer'
 import { EventHallWithOrganizerId } from '../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../interfaces/eventHallForSearch';
-import { BookingEventHall } from '../interfaces/bookingEventHall';
+import { BookingEntity } from '../interfaces/bookingEventHall';
+
+import { StripePaymentService } from '../frameworks/payment/StripePayment';
+
+import Stripe from 'stripe';
+import { v4 as uuidv4 } from 'uuid';
 
 export class UserUseCases {
   private userRepository: UserRepository;
@@ -220,18 +225,73 @@ export class UserUseCases {
     return await this.orgRepository.getHallWithOrganizerDetailsId(organizerId);
   }
 
-  async createBooking(bookingData: BookingEventHall): Promise<string> {
+  async createBooking(bookingData: BookingEntity): Promise<{ bookingId: string; status: string }> {
     try {
-      const bookingId = await this.bookingRepository.createBooking(bookingData);
-
-      return bookingId;
+        const { bookingId, status } = await this.bookingRepository.createBooking(bookingData);    
+        // Return the bookingId and status
+        // console.log(bookingId, 'bookingId in usecase')
+        return { bookingId, status };
     } catch (error) {
-      console.error('Error creating booking', error);
-      throw new Error('Failed to create booking');
+        console.error('Error creating booking:', error);
+        throw new Error('Failed to create booking');
     }
-  }
+}
 
-  // async getBookingDetails(organizerId: string, date: Date): 
+async createPayment(amount: number, currency: string, payment_method_id: string,) {
+  const paymentIntent = await StripePaymentService.createPaymentIntent(amount, currency, payment_method_id);
+      // console.log(paymentIntent, 'payment intent in usecase')
+  return {
+    paymentIntentId: paymentIntent.id,
+    clientSecret: paymentIntent.client_secret,
+  };
+} catch (error: any) {
+  console.error('Error during payment intent creation:', error);
+  throw new Error('Failed to create payment intent');
+}
+
+async confirmPayment(paymentIntentId: string, BookingId: string) {
+  try {
+    const paymentIntent = await StripePaymentService.retrievePaymentIntent(paymentIntentId);
+    
+    // Map Stripe payment status to our defined statuses(in booking entity)
+    const mapPaymentStatus = (status: Stripe.PaymentIntent.Status): 'succeeded' | 'failed' | 'refunded' => {
+      switch (status) {
+        case 'succeeded':
+          return 'succeeded';
+        case 'canceled':
+          return 'failed';
+        case 'requires_payment_method':
+          return 'failed';
+        default:
+          return 'failed';
+      }
+    };
+
+    const paymentDetails = {
+      paymentId: paymentIntent.id,
+      paymentAmount: paymentIntent.amount / 100, // Convert from cents to standard unit
+      currency: paymentIntent.currency,
+      paymentStatus: mapPaymentStatus(paymentIntent.status),
+    };
+
+    await this.bookingRepository.updateBooking(BookingId, {
+      isPaymentPaid: paymentDetails.paymentStatus === 'succeeded',
+      status: paymentDetails.paymentStatus === 'succeeded' ? 'confirmed' : 'pending',
+      paymentDetails,
+    });
+
+    return {
+      message: 'Payment confirmed and booking updated successfully.',
+      BookingId,
+      paymentDetails,
+    };
+  } catch (error) {
+    console.error('Error confirming payment:', error);
+    throw new Error('Payment confirmation failed.');
+  }
+}
+
+
 
   async getProfile(userId: string): Promise<UserEntity | null> {
     return this.userRepository.getProfile(userId);

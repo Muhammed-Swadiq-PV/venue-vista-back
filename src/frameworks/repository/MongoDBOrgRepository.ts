@@ -18,7 +18,7 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   private orgModel: Model<OrgEntity & Document>;
   private postModel: Model<OrgPostDocument>;
-  private BookingModel: Model<BookingWeeklyEntity>
+  private BookingPriceModel: Model<BookingWeeklyEntity>
 
 
   constructor(
@@ -28,7 +28,7 @@ export class MongoDBOrgRepository implements OrgRepository {
   ) {
     this.orgModel = orgModel;
     this.postModel = postModel;
-    this.BookingModel = BookingModel;
+    this.BookingPriceModel = BookingModel;
   }
 
 
@@ -965,7 +965,7 @@ export class MongoDBOrgRepository implements OrgRepository {
         setDefaultsOnInsert: true,
       };
 
-      const result = await this.BookingModel.findOneAndUpdate(filter, update, options);
+      const result = await this.BookingPriceModel.findOneAndUpdate(filter, update, options);
       return result;
     } catch (error) {
       console.error('Error in addPriceBySelectDay:', error);
@@ -982,7 +982,7 @@ export class MongoDBOrgRepository implements OrgRepository {
       endOfDay.setUTCHours(23, 59, 59, 999);
 
       // Find booking details for the specific date and organizer
-      const priceDetails = await this.BookingModel.findOne({
+      const priceDetails = await this.BookingPriceModel.findOne({
         bookingDate: {
           $gte: startOfDay,
           $lte: endOfDay
@@ -997,7 +997,7 @@ export class MongoDBOrgRepository implements OrgRepository {
 
       // If no specific booking details are found, find a default document for the organizer
       const dayOfWeek = new Date(filter.date).toLocaleString('en-IN', { weekday: 'long' });
-      const defaultPrices = await this.BookingModel.findOne({
+      const defaultPrices = await this.BookingPriceModel.findOne({
         organizerId: filter.organizerId,
         [`weeklyPrices.${dayOfWeek}`]: { $exists: true }
       }).exec();
@@ -1005,7 +1005,7 @@ export class MongoDBOrgRepository implements OrgRepository {
       // Return the default prices document if found
       if (defaultPrices) {
         const weeklyPrice = defaultPrices.weeklyPrices?.[dayOfWeek] || defaultPrices.prices;
-        const mergedDocument = new this.BookingModel({
+        const mergedDocument = new this.BookingPriceModel({
           organizerId: defaultPrices.organizerId,
           userId: defaultPrices.userId,
           bookingDate: filter.date,
@@ -1034,7 +1034,7 @@ export class MongoDBOrgRepository implements OrgRepository {
       const startDate = new Date(year, month - 1, 1); // 1st day of the month
       const endDate = new Date(year, month, 0); // Last day of the month
 
-      const events = await this.BookingModel.find({
+      const events = await this.BookingPriceModel.find({
         organizerId,
         bookingDate: { $gte: startDate, $lte: endDate }
       }).exec();
@@ -1048,7 +1048,7 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async createDefaultPrice(data: { organizerId: Types.ObjectId, weeklyPrices: Record<string, BookingPrices> }): Promise<BookingWeeklyEntity | null> {
     try {
-      const updatedBooking = await this.BookingModel.findOneAndUpdate(
+      const updatedBooking = await this.BookingPriceModel.findOneAndUpdate(
         { organizerId: data.organizerId },
         { $set: { weeklyPrices: data.weeklyPrices } },
         { upsert: true, new: true } // Create if not exists and return the updated document

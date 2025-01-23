@@ -26,7 +26,7 @@ mongoDB.connect()
 
 // Middleware to connect CORS
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173','https://e6b2-2405-201-f02e-f807-eca4-1146-6875-9457.ngrok-free.app'],
     methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization, X-Role'
 }));
