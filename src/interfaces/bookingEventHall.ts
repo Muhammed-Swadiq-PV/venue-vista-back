@@ -1,4 +1,5 @@
 import { Document, Types } from "mongoose";
+import { OrgEntity } from "../entity/models/OrgEntity";
 
 export interface BookingEntity extends Document {
     _id:Types.ObjectId;
@@ -30,4 +31,6 @@ export interface BookingEntity extends Document {
         cancellationReason?: string;
         cancellationDate?: Date;
     };
+
+    organizerDetails?: OrgEntity | null;
 }

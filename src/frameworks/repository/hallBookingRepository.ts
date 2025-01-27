@@ -2,9 +2,16 @@ import BookingPriceModel from "../../entity/models/weeklyBookingModel";
 import BookingModel from "../../entity/models/bookingSchema";
 import { BookingRepository } from "../../entity/repository/bookingRepository";
 import { BookingEntity} from "../../interfaces/bookingEventHall";
+import { OrgRepository } from "../../entity/repository/orgRepository";
+import { OrgEntity } from "../../entity/models/OrgEntity";
 
 
 export class HallBookingRepository implements BookingRepository {
+    private orgRepository: OrgRepository;
+
+    constructor(orgRepository: OrgRepository){
+        this.orgRepository = orgRepository;
+    }
 
     async findPriceByDate(organizerId: string, date: Date): Promise<any | null> {
         const priceDetails = await BookingPriceModel.findOne({
@@ -72,6 +79,46 @@ async updateBooking(BookingId: string, updateData: Partial<BookingEntity>): Prom
         throw new Error('Failed to update booking');
       }
 }
+
+async getUserBookings(userId: string): Promise<BookingEntity[]> {
+    try {
+      const bookings = await BookingModel.find({ userId,isPaymentPaid: true }).exec() as BookingEntity[];
+  
+      // Get unique organizer IDs
+      const organizerIds = [...new Set(bookings.map((booking) => booking.organizerId))];
+      
+      // Fetch all organizers in one go
+      const organizers = await this.orgRepository.findOrganizersByIds(organizerIds);
+  
+      // Map organizers by ID for quick lookup
+      const organizerMap = organizers.reduce((map: Record<string, OrgEntity>, organizer: OrgEntity) => {
+        map[organizer._id.toString()] = organizer;
+        return map;
+      }, {} as Record<string, OrgEntity>);
+  
+
+    const bookingsWithOrganizerDetails = bookings.map((booking) => ({
+        ...booking.toObject(), 
+        organizerDetails: {
+          name: organizerMap[booking.organizerId.toString()]?.name || null,
+          email: organizerMap[booking.organizerId.toString()]?.email || null,
+          buildingFloor: organizerMap[booking.organizerId.toString()]?.buildingFloor || null,
+          city: organizerMap[booking.organizerId.toString()]?.city || null,
+          district: organizerMap[booking.organizerId.toString()]?.district || null,
+          phoneNumber: organizerMap[booking.organizerId.toString()]?.phoneNumber || null,
+          pincode: organizerMap[booking.organizerId.toString()]?.pincode || null,
+          rulesAndRestrictions: organizerMap[booking.organizerId.toString()]?.rulesAndRestrictions || null,
+          paymentPolicy: organizerMap[booking.organizerId.toString()]?.paymentPolicy || null,
+        },
+      }));
+      return bookingsWithOrganizerDetails;
+    } catch (error) {
+      console.error('Error fetching user bookings:', error);
+      throw new Error('Failed to fetch user bookings');
+    }
+  }
+  
+  
 
 }
 

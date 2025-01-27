@@ -407,6 +407,17 @@ export class UserController {
     }
   }
 
+  async myBookings(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+
+      const bookings = await this.userUseCases.myBookings(userId);
+      res.status(200).json(bookings);
+    } catch (error: any) {
+      res.status(500).json({error: error.message});
+    }
+  }
+
   // async getBookingDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
   //   try {
   //     const {organizerId} = req.params;

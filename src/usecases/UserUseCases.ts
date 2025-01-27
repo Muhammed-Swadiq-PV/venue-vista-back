@@ -291,6 +291,20 @@ async confirmPayment(paymentIntentId: string, BookingId: string) {
   }
 }
 
+async myBookings(userId: string):Promise<BookingEntity[]> {
+  try {
+    if(!userId){
+      throw new Error('user id is required');
+    }
+    const bookings = await this.bookingRepository.getUserBookings(userId);
+    console.log(bookings, 'bookings')
+    return bookings;
+  } catch (error) {
+    console.error('error fetching user details in usecase');
+    throw new Error('Failed to fetch user bookings');
+  }
+}
+
 
 
   async getProfile(userId: string): Promise<UserEntity | null> {

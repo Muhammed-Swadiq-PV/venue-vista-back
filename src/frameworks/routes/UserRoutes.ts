@@ -14,7 +14,7 @@ import { HallBookingRepository } from '../repository/hallBookingRepository';
 
 const userRepository = new MongoDBUserRepository();
 const orgRepository = new MongoDBOrgRepository( OrgModel ,OrgPostModel, BookingModel);
-const bookingRepository = new HallBookingRepository();
+const bookingRepository = new HallBookingRepository(orgRepository);
 
 const userUseCases = new UserUseCases(userRepository, orgRepository , bookingRepository);
 const userController = new UserController(userUseCases);
@@ -66,6 +66,8 @@ router.get('/priceDetails/:organizerId/:selectedDate',authenticateJWT, checkBloc
 router.post('/bookings', userController.createBooking.bind(userController));
 router.post('/create-payment-intent' , userController.createPayment.bind(userController));
 router.post('/confirm-payment', userController.confirmPayment.bind(userController));
+
+router.get('/mybookings/:userId', checkBlock, userController.myBookings.bind(userController));
 
 
 // router.get('/bookings/:organizerId', userController.getBookingDetails.bind(userController) );

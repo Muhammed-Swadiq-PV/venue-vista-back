@@ -6,6 +6,7 @@ import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganize
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
 import { ObjectId } from 'mongodb';
 import { BookingWeeklyEntity, BookingPrices, } from '../../interfaces/weeklyPrices';
+import { Types } from 'mongoose';
 
 
 export interface OrgRepository {
@@ -20,6 +21,7 @@ export interface OrgRepository {
 
     findProfileById(organizerId: string): Promise<OrgEntity | null>;
     findById(organizerId: ObjectId): Promise<OrgEntity | null>;
+    findOrganizersByIds(ids: (string | Types.ObjectId)[]): Promise<OrgEntity[]>
 
     // Post-related methods
     createPost(post: OrgPostEntity): Promise<OrgPostEntity>;

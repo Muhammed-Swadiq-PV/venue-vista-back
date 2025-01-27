@@ -1,4 +1,5 @@
 import { OrgEntity } from '../../entity/models/OrgEntity';
+import { NewOrgEntity } from '../../entity/models/OrgEntity';
 import { OrgRepository } from '../../entity/repository/orgRepository';
 import { OrgPostEntity } from '../../entity/models/OrgPostEntity';
 import { OrgPostDocument } from '../../entity/models/OrgPostDocument';
@@ -33,8 +34,8 @@ export class MongoDBOrgRepository implements OrgRepository {
 
 
 
-  async createOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
-    let newOrganizer: OrgEntity;
+  async createOrganizer(organizer: NewOrgEntity): Promise<OrgEntity> {
+    let newOrganizer: NewOrgEntity;
 
     if (organizer.isGoogle) {
 
@@ -71,7 +72,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     return savedOrganizer;
   }
 
-  async saveOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
+  async saveOrganizer(organizer: NewOrgEntity): Promise<OrgEntity> {
     const organizerModel = new OrgModel(organizer);
     const savedOrganizer = await organizerModel.save();
     return savedOrganizer.toObject();
@@ -84,6 +85,11 @@ export class MongoDBOrgRepository implements OrgRepository {
   async findOrganizerById(id: string): Promise<OrgEntity | null> {
     return await OrgModel.findById(id).exec();
   }
+
+  async findOrganizersByIds(ids: (string | Types.ObjectId)[]): Promise<OrgEntity[]> {
+    return await OrgModel.find({ _id: { $in: ids } }).exec();
+  }
+  
 
   async updateOrganizerByEmail(email: string, profileData: Partial<OrgEntity>): Promise<OrgEntity | null> {
     try {

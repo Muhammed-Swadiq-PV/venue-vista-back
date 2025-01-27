@@ -9,4 +9,6 @@ export interface BookingRepository{
     createBooking(bookingData: BookingEntity): Promise<{ bookingId: string; status: string }>;
 
     updateBooking(BookingId: string, updateData: Partial<BookingEntity>): Promise<{ bookingId: string; status: string }>;
+
+    getUserBookings(userId: string): Promise<BookingEntity[]>;
 }
