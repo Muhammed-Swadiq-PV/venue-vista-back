@@ -418,29 +418,21 @@ export class UserController {
     }
   }
 
-  // async getBookingDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
-  //   try {
-  //     const {organizerId} = req.params;
-  //     const {date }= req.query;
+  async confirmCancellation(req: Request, res: Response): Promise<void> {
+    try {
+     const { bookingId } = req.params;
+     const { cancellationReason } = req.body;
+    //  console.log(bookingId, cancellationReason, 'cancellation reason, booking id')
+     if(!bookingId || !cancellationReason){
+      res.status(400).json({error: 'Booking id is required'});
+      return;
+     }
+     const result = await this.userUseCases.confirmCancellation(bookingId, cancellationReason);
+     res.status(200).json({message: "Booking canceled successfully", result});
 
-  //     if(!organizerId || !date){
-  //       res.status(400).json({message: 'Organizer id and date are required'});
-  //       return;
-  //     }
-
-  //     const bookingDetails = await this.userUseCases.getBookingDetails(organizerId, date);
-
-  //     if (!bookingDetails || bookingDetails.length === 0) {
-  //       res.status(404).json({ message: 'No bookings found for this date' });
-  //       return;
-  //     }
-
-  //     res.status(200).json(bookingDetails);
-
-  //   } catch (error) {
-  //     console.error('Error fetching booking details: ', error);
-  //     res.status(500).json({message: 'Internal server error'});
-  //   }
-  // }
+    } catch (error: any) {
+      res.status(500).json({error:error.message})
+    }
+  }
 
 }

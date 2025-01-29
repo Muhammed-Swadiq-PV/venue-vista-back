@@ -117,8 +117,30 @@ async getUserBookings(userId: string): Promise<BookingEntity[]> {
       throw new Error('Failed to fetch user bookings');
     }
   }
+
+
+  async findBookingById(bookingId: string): Promise<BookingEntity | null> {
+    try {
+      const booking = await BookingModel.findById(bookingId).lean();
+      return booking || null; 
+    } catch (error) {
+      console.error(`Error finding booking with ID ${bookingId}:`, error);
+      throw new Error("Failed to retrieve booking.");
+    }
+  }
   
-  
+  async updateCancellation(bookingId: string, booking: Partial<BookingEntity>): Promise<BookingEntity | null> {
+    try {
+        const updatedBooking = await BookingModel.findByIdAndUpdate(
+            bookingId,
+            {$set: booking},
+            {new: true},
+        ).lean();
+        return updatedBooking;
+    } catch (error) {
+        throw new Error("Failed to update booking cancellation");
+    }
+  }
 
 }
 

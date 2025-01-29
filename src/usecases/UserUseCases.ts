@@ -297,7 +297,7 @@ async myBookings(userId: string):Promise<BookingEntity[]> {
       throw new Error('user id is required');
     }
     const bookings = await this.bookingRepository.getUserBookings(userId);
-    console.log(bookings, 'bookings')
+    // console.log(bookings, 'bookings')
     return bookings;
   } catch (error) {
     console.error('error fetching user details in usecase');
@@ -305,6 +305,40 @@ async myBookings(userId: string):Promise<BookingEntity[]> {
   }
 }
 
+
+async confirmCancellation(bookingId: string, cancellationReason: string):Promise<BookingEntity> {
+  try {
+    console.log('inside confirm cancellation')
+    const booking = await this.bookingRepository.findBookingById(bookingId);
+    // console.log(booking, 'booking details')
+
+    if(!booking){
+      throw new Error('Booking not found');
+    }
+
+    if (booking.status === "canceled") {
+      throw new Error("Booking is already canceled");
+    }
+
+    booking.status = 'canceled';
+    booking.cancellationDetails = {
+      cancellationReason,
+      cancellationDate: new Date(),
+    }
+
+    const updatedBooking = await this.bookingRepository.updateCancellation(bookingId, booking);
+
+    if (!updatedBooking) {
+      throw new Error("Failed to update booking");
+    }
+
+    return updatedBooking;
+   
+  } catch (error) {
+    console.error("Error confirming cancellation:", error);
+    throw new Error("Booking cancellation failed.");
+  }
+}
 
 
   async getProfile(userId: string): Promise<UserEntity | null> {
