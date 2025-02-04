@@ -156,4 +156,36 @@ export class AdmController {
         }
     }
 
+    async getMonthlyBookings(req: Request, res: Response): Promise<Response> {
+        try {
+            const { month, year } = req.query; 
+            console.log(month, year, 'month and year')
+            // Validate inputs
+            if (!month || !year) {
+                return res.status(400).json({ error: 'Month and year are required' });
+            }
+    
+            const monthNumber = Number(month);
+            const yearNumber = Number(year);
+    
+            if (isNaN(monthNumber) || isNaN(yearNumber)) {
+                return res.status(400).json({ error: 'Invalid month or year format' });
+            }
+    
+            // Fetch data from use case
+            const result = await this.admUseCases.getMonthlyBookings(yearNumber, monthNumber);
+    
+            if (result) {
+                return res.status(200).json(result);
+            } else {
+                return res.status(404).json({ error: 'No data found for the given month' });
+            }
+    
+        } catch (error: any) {
+            console.error('Error fetching monthly bookings:', error);
+            return res.status(500).json({ message: 'Internal server error', error: error.message });
+        }
+    }
+    
+
 }

@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
 export interface OrgEntity {
-  _id: ObjectId;
+  _id?: ObjectId;
   id?: string;
   name: string;
   email: string;
@@ -29,4 +29,6 @@ export interface OrgEntity {
   paymentPolicy?: string;
 }
 
-export type NewOrgEntity = Omit<OrgEntity, '_id'>;
+export type NewOrgEntity = OrgEntity & {
+  _id: ObjectId; 
+};

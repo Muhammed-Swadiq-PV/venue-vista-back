@@ -63,14 +63,14 @@ router.get('/profile/:userId', checkBlock, userController.getProfile.bind(userCo
 router.post('/profile/:userId', checkBlock,userController.postProfile.bind(userController));
 //booking routes
 router.get('/priceDetails/:organizerId/:selectedDate',authenticateJWT, checkBlock, userController.getPriceDetails.bind(userController));
-router.post('/bookings',checkBlock, userController.createBooking.bind(userController));
+router.post('/bookings',authenticateJWT , checkBlock, userController.createBooking.bind(userController));
 router.post('/create-payment-intent' ,checkBlock, userController.createPayment.bind(userController));
-router.post('/confirm-payment',checkBlock, userController.confirmPayment.bind(userController));
+router.post('/confirm-payment', checkBlock, userController.confirmPayment.bind(userController));
 
 //cancellation routes
-router.post('/bookings/:bookingId/cancel', userController.confirmCancellation.bind(userController));
+router.post('/bookings/:bookingId/cancel',authenticateJWT, userController.confirmCancellation.bind(userController));
 
-router.get('/mybookings/:userId', checkBlock, userController.myBookings.bind(userController));
+router.get('/mybookings/:userId',authenticateJWT, checkBlock, userController.myBookings.bind(userController));
 
 
 // router.get('/bookings/:organizerId', userController.getBookingDetails.bind(userController) );

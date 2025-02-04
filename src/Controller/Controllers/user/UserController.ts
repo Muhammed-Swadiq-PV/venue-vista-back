@@ -387,7 +387,6 @@ export class UserController {
   async createPayment(req: Request, res: Response): Promise<void> {
     try {
       const {amount,currency, payment_method_id} = req.body;
-      // console.log(req.body, 'req.body in controller')
 
       const result = await this.userUseCases.createPayment(amount, currency, payment_method_id)
       res.status(200).json(result)

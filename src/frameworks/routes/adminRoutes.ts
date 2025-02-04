@@ -34,6 +34,9 @@ router.get('/pending-request/:id', admController.fetchPendingOrganizerWithId.bin
 router.patch('/organizer/:id/approve', admController.approveOrganizer.bind(admController));
 router.patch('/organizer/:id/disapprove', admController.disapproveOrganizer.bind(admController));
 
+//get booking data for graphs
+router.get('/bookings/monthly', admController.getMonthlyBookings.bind(admController));
+
 
 
 export default router;

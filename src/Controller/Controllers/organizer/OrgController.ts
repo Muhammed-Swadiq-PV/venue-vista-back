@@ -87,8 +87,6 @@ export class OrgController {
       }
 
       const organizer = await this.orgUseCases.createGoogleOrganizer({ email, name, password });
-
-      // console.log('Organizer created successfully with Google:', organizer);
       if (!organizer || !organizer.id) {
         console.log('not organizer');
         throw new Error('organizer not found');

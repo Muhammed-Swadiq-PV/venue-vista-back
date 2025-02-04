@@ -10,9 +10,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 export class StripePaymentService {
     static async createPaymentIntent(amount: number, currency: string, payment_method_id: string) {
       try {
-        console.log('inside stripe')
-        console.log('Payment Method ID:', payment_method_id);
-        console.log('Stripe Secret Key:', process.env.STRIPE_SECRET_KEY);
 
         const paymentIntent = await stripe.paymentIntents.create({
           amount, // Amount in smallest currency unit (e.g., paise for INR)
@@ -53,5 +50,26 @@ export class StripePaymentService {
         throw error;
       }
     }
+
+
+    static async createConnectedAccount(email: string) {
+      try {
+        const account = await stripe.accounts.create({
+          type: "express", 
+          email,
+          country: "IN", 
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+        });
+    
+        return account.id; 
+      } catch (error: any) {
+        console.error("Error creating connected account:", error);
+        throw new Error(`Stripe Error: ${error.message}`);
+      }
+    }
+    
     
   }

@@ -3,7 +3,7 @@ import BookingModel from "../../entity/models/bookingSchema";
 import { BookingRepository } from "../../entity/repository/bookingRepository";
 import { BookingEntity} from "../../interfaces/bookingEventHall";
 import { OrgRepository } from "../../entity/repository/orgRepository";
-import { OrgEntity } from "../../entity/models/OrgEntity";
+import { NewOrgEntity,OrgEntity } from "../../entity/models/OrgEntity";
 
 
 export class HallBookingRepository implements BookingRepository {
@@ -91,10 +91,13 @@ async getUserBookings(userId: string): Promise<BookingEntity[]> {
       const organizers = await this.orgRepository.findOrganizersByIds(organizerIds);
   
       // Map organizers by ID for quick lookup
-      const organizerMap = organizers.reduce((map: Record<string, OrgEntity>, organizer: OrgEntity) => {
-        map[organizer._id.toString()] = organizer;
+      const organizerMap = organizers.reduce((map: Record<string, NewOrgEntity>, organizer: OrgEntity) => {
+        if (organizer._id) { // Check if _id is defined
+          map[organizer._id.toString()] = organizer as NewOrgEntity; // Cast to NewOrgEntity
+        }
         return map;
-      }, {} as Record<string, OrgEntity>);
+      }, {} as Record<string, NewOrgEntity>);
+      
   
 
     const bookingsWithOrganizerDetails = bookings.map((booking) => ({

@@ -109,4 +109,17 @@ export class AdmUseCases {
             throw new Error('Error disapproving organizer:' + error.message);
         }
     }
+
+    async getMonthlyBookings(month: number, year: number): Promise<any> {
+        try {
+            // Call repository method to fetch bookings
+            const bookingsData = await this.orgRepository.getMonthlyBookings(month, year);
+            console.log(bookingsData, 'booking data')
+            return bookingsData;
+        } catch (error) {
+            console.error("Error fetching monthly bookings:", error);
+            return null;
+        }
+    }
+    
 }

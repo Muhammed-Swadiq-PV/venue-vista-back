@@ -1,5 +1,5 @@
 import { OrgRepository } from '../entity/repository/orgRepository';
-import { OrgEntity } from '../entity/models/OrgEntity';
+import { NewOrgEntity, OrgEntity } from '../entity/models/OrgEntity';
 import { OrgPostEntity } from '../entity/models/OrgPostEntity';
 import { generateOTP, sendOtpEmail } from '../utils/otpGenerator';
 import { GetPresignedUrlUseCase } from './GetPresignedUrlUseCases';

@@ -1,5 +1,4 @@
 import { OrgEntity } from '../../entity/models/OrgEntity';
-import { NewOrgEntity } from '../../entity/models/OrgEntity';
 import { OrgRepository } from '../../entity/repository/orgRepository';
 import { OrgPostEntity } from '../../entity/models/OrgPostEntity';
 import { OrgPostDocument } from '../../entity/models/OrgPostDocument';
@@ -12,6 +11,7 @@ import { EventHallDetails, OrganizerDetails, EventHallWithOrganizerDetails } fro
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
 import { EventHallAndOrganizerArray } from '../../interfaces/eventHallForSearch';
 import { BookingWeeklyEntity, BookingPrices } from '../../interfaces/weeklyPrices';
+import BookingModel from '../../entity/models/bookingSchema';
 
 
 
@@ -34,8 +34,8 @@ export class MongoDBOrgRepository implements OrgRepository {
 
 
 
-  async createOrganizer(organizer: NewOrgEntity): Promise<OrgEntity> {
-    let newOrganizer: NewOrgEntity;
+  async createOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
+    let newOrganizer: OrgEntity;
 
     if (organizer.isGoogle) {
 
@@ -72,7 +72,7 @@ export class MongoDBOrgRepository implements OrgRepository {
     return savedOrganizer;
   }
 
-  async saveOrganizer(organizer: NewOrgEntity): Promise<OrgEntity> {
+  async saveOrganizer(organizer: OrgEntity): Promise<OrgEntity> {
     const organizerModel = new OrgModel(organizer);
     const savedOrganizer = await organizerModel.save();
     return savedOrganizer.toObject();
@@ -308,6 +308,47 @@ export class MongoDBOrgRepository implements OrgRepository {
     } catch (error: any) {
       console.error('error updating organizer:', error);
       throw new Error('Error disapproving organizer:' + error.message);
+    }
+  }
+
+
+
+  // for get booking details based on month year
+
+  async getMonthlyBookings( year: number , month: number): Promise<any> {
+    try {
+      // console.log(`Received month: ${month}, year: ${year}`); 
+       const startDate = new Date(year, month - 1, 1);
+      //  console.log(`Constructed Date: ${startDate.toISOString()}`)
+       const endDate = new Date(year, month, 0, 23, 59, 59);
+      // console.log(startDate, endDate, 'end date in repository')
+       const bookings = await BookingModel.aggregate([
+        { 
+          $match:{
+            bookingDate: { $gte: startDate, $lte: endDate},
+            status: 'confirmed'
+          }
+        },
+        {
+          $group:{
+            _id: { day: {$dayOfMonth: "$bookingDate" } },
+            totalBookings: { $sum: 1 }
+          }
+        },
+        {
+          $sort: {
+            "_id.day": 1
+          }
+        }
+       ]);
+
+      //  console.log( bookings, 'booking in repository')
+       return bookings.map(entry => ({
+        date: `Day ${entry._id.day}`,
+        bookings: entry.totalBookings
+    }));
+    } catch (error) {
+      
     }
   }
 

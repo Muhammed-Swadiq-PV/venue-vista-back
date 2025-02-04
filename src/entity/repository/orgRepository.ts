@@ -1,5 +1,5 @@
 // src/entity/repository/orgRepository.ts
-import { OrgEntity } from '../models/OrgEntity';
+import { NewOrgEntity, OrgEntity } from '../models/OrgEntity';
 import { OrgPostEntity } from '../models/OrgPostEntity';
 import { EventHallWithOrganizerDetails } from '../../interfaces/eventHallwithOrganizer';
 import { EventHallWithOrganizerId } from '../../interfaces/eventHallWithOrganizerId';
@@ -45,6 +45,9 @@ export interface OrgRepository {
     getPendingOrganizerWithId(id: string): Promise<OrgEntity | null>;
     approveOrganizer(id: string): Promise<OrgEntity | null>;
     disApproveOrganizer(id: string): Promise<OrgEntity | null>;
+
+    // for get booking data in admin side
+    getMonthlyBookings(month: number, year: number): Promise<any>;
     //for user related tasks
     getHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }>
     findOrganizersByLocation(latitude: number, longitude: number): Promise<any>
