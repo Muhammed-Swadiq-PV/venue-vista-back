@@ -47,7 +47,8 @@ export interface OrgRepository {
     disApproveOrganizer(id: string): Promise<OrgEntity | null>;
 
     // for get booking data in admin side
-    getMonthlyBookings(month: number, year: number): Promise<any>;
+    getMonthlyBookings(month: number, year: number): Promise<{ date: string; bookings: number }[]>;
+    getYearlyBookings(year: number): Promise<{ month: string; bookings: number }[]>
     //for user related tasks
     getHallWithOrganizerDetails(page: number, limit: number): Promise<{ details: EventHallWithOrganizerDetails | null, totalPages: number }>
     findOrganizersByLocation(latitude: number, longitude: number): Promise<any>

@@ -89,7 +89,7 @@ export class MongoDBOrgRepository implements OrgRepository {
   async findOrganizersByIds(ids: (string | Types.ObjectId)[]): Promise<OrgEntity[]> {
     return await OrgModel.find({ _id: { $in: ids } }).exec();
   }
-  
+
 
   async updateOrganizerByEmail(email: string, profileData: Partial<OrgEntity>): Promise<OrgEntity | null> {
     try {
@@ -313,25 +313,22 @@ export class MongoDBOrgRepository implements OrgRepository {
 
 
 
-  // for get booking details based on month year
+  // for get booking details based on month and year for admin
 
-  async getMonthlyBookings( year: number , month: number): Promise<any> {
+  async getMonthlyBookings(year: number, month: number): Promise<any> {
     try {
-      // console.log(`Received month: ${month}, year: ${year}`); 
-       const startDate = new Date(year, month - 1, 1);
-      //  console.log(`Constructed Date: ${startDate.toISOString()}`)
-       const endDate = new Date(year, month, 0, 23, 59, 59);
-      // console.log(startDate, endDate, 'end date in repository')
-       const bookings = await BookingModel.aggregate([
-        { 
-          $match:{
-            bookingDate: { $gte: startDate, $lte: endDate},
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59);
+      const bookings = await BookingModel.aggregate([
+        {
+          $match: {
+            bookingDate: { $gte: startDate, $lte: endDate },
             status: 'confirmed'
           }
         },
         {
-          $group:{
-            _id: { day: {$dayOfMonth: "$bookingDate" } },
+          $group: {
+            _id: { day: { $dayOfMonth: "$bookingDate" } },
             totalBookings: { $sum: 1 }
           }
         },
@@ -340,21 +337,63 @@ export class MongoDBOrgRepository implements OrgRepository {
             "_id.day": 1
           }
         }
-       ]);
+      ]);
 
-      //  console.log( bookings, 'booking in repository')
-       return bookings.map(entry => ({
+      return bookings.map(entry => ({
         date: `Day ${entry._id.day}`,
         bookings: entry.totalBookings
-    }));
+      }));
     } catch (error) {
-      
+
+    }
+  }
+
+  async getYearlyBookings(year: number): Promise<{ month: string; bookings: number }[]> {
+    try {
+      const startDate = new Date(year, 0, 1);
+      const endDate = new Date(year, 11, 31, 23, 59, 59);
+
+      const bookings = await BookingModel.aggregate([
+        {
+          $match:
+          {
+            bookingDate: { $gte: startDate, $lte: endDate },
+            status: 'confirmed'
+          }
+        },
+        {
+          $group: {
+            _id: { month: { $month: "$bookingDate" } },
+            totalBookings: { $sum: 1 }
+          }
+        },
+        {
+          $sort: { "_id.month": 1 }
+        }
+      ]);
+
+      // Convert month number (1-12) to month names
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+
+      return bookings.map(entry => ({
+        month: monthNames[entry._id.month - 1],
+        bookings: entry.totalBookings
+      }));
+
+    } catch (error) {
+      console.error("Error fetching yearly bookings:", error);
+      return [];
     }
   }
 
 
 
 
+
+  // organizer giving data about their organization
   async createPost(post: OrgPostEntity): Promise<OrgPostEntity> {
     const newPost = new OrgPostModel(post);
     const savedPost = await newPost.save();
@@ -728,9 +767,9 @@ export class MongoDBOrgRepository implements OrgRepository {
         return null;
       }
 
-      return { 
-         organizerName: organizer.name,
-         phoneNumber: organizer.phoneNumber,
+      return {
+        organizerName: organizer.name,
+        phoneNumber: organizer.phoneNumber,
         rulesAndRestrictions: organizer.rulesAndRestrictions || '',
         paymentPolicy: organizer.paymentPolicy || ''
       }
@@ -740,12 +779,12 @@ export class MongoDBOrgRepository implements OrgRepository {
     }
   }
 
-  async getOrganizerDetails(postId: string): Promise<{ carParkingSpace: number; bikeParkingSpace: number; indoorSeatingCapacity: number; diningCapacity: number} | null > {
+  async getOrganizerDetails(postId: string): Promise<{ carParkingSpace: number; bikeParkingSpace: number; indoorSeatingCapacity: number; diningCapacity: number } | null> {
     try {
       const objectId = new mongoose.Types.ObjectId(postId);
       const details = await this.postModel.findById(objectId).select('parking indoor dining').exec();
 
-      if(!details){
+      if (!details) {
         return null;
       }
       return {

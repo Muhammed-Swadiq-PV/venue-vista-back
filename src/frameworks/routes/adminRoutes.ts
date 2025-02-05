@@ -36,6 +36,7 @@ router.patch('/organizer/:id/disapprove', admController.disapproveOrganizer.bind
 
 //get booking data for graphs
 router.get('/bookings/monthly', admController.getMonthlyBookings.bind(admController));
+router.get('/bookings/yearly', admController.getYearlyBookings.bind(admController));
 
 
 

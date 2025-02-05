@@ -112,13 +112,20 @@ export class AdmUseCases {
 
     async getMonthlyBookings(month: number, year: number): Promise<any> {
         try {
-            // Call repository method to fetch bookings
             const bookingsData = await this.orgRepository.getMonthlyBookings(month, year);
-            console.log(bookingsData, 'booking data')
             return bookingsData;
         } catch (error) {
             console.error("Error fetching monthly bookings:", error);
             return null;
+        }
+    }
+
+    async getYearlyBookings(year: number): Promise<any> {
+        try {
+            const bookingsData = await this.orgRepository.getYearlyBookings(year);
+            return bookingsData;
+        } catch (error) {
+            return null
         }
     }
     

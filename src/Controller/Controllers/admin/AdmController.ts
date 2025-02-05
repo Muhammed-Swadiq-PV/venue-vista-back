@@ -158,15 +158,14 @@ export class AdmController {
 
     async getMonthlyBookings(req: Request, res: Response): Promise<Response> {
         try {
-            const { month, year } = req.query; 
-            console.log(month, year, 'month and year')
+            const { selectedMonth, selectedYear } = req.query; 
             // Validate inputs
-            if (!month || !year) {
+            if (!selectedMonth|| ! selectedYear) {
                 return res.status(400).json({ error: 'Month and year are required' });
             }
     
-            const monthNumber = Number(month);
-            const yearNumber = Number(year);
+            const monthNumber = Number(selectedMonth);
+            const yearNumber = Number(selectedYear);
     
             if (isNaN(monthNumber) || isNaN(yearNumber)) {
                 return res.status(400).json({ error: 'Invalid month or year format' });
@@ -184,6 +183,24 @@ export class AdmController {
         } catch (error: any) {
             console.error('Error fetching monthly bookings:', error);
             return res.status(500).json({ message: 'Internal server error', error: error.message });
+        }
+    }
+
+    async getYearlyBookings(req: Request, res: Response): Promise<Response> {
+        try {
+            const { yearSelected } = req.query;
+            const year = Number( yearSelected);
+            if(!yearSelected){
+                return res.status(400).json({error: 'Year required'});
+            }
+            const result = await this.admUseCases.getYearlyBookings(year);
+            if (result) {
+                return res.status(200).json(result);
+            } else {
+                return res.status(404).json({ error: 'No data found for the given month' });
+            }
+        } catch (error:any) {
+            return res.status(500).json({message: 'Internal server error', error: error.message})
         }
     }
     
