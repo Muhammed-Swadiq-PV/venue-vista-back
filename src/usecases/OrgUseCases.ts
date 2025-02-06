@@ -316,7 +316,6 @@ export class OrgUseCases {
         console.log('organizer not found');
         throw new Error('Organizer not found');
       }
-      // const defaultPrice = await this.orgRepository.createDefaultPrice({organizerId: orgObjectId, weeklyPrices})
       await BookingModel.findOneAndUpdate(
         { organizerId: orgObjectId },
         { $set: { weeklyPrices } },
@@ -330,4 +329,28 @@ export class OrgUseCases {
     }
 
   }
+
+  // get booking details
+
+  async getBookingDetails(organizerId: string): Promise<any> {
+    try {
+      const orgObjectId = new Types.ObjectId(organizerId);
+      const existingOrganizer = await this.orgRepository.findById(orgObjectId);
+  
+      if (!existingOrganizer) {
+        console.log('organizer not found');
+        throw new Error('Organizer not found');
+      }
+
+      const bookingDetails = await this.orgRepository.getBookingByOrganizerId(orgObjectId);
+      return bookingDetails
+
+    } catch (error) {
+      throw new Error('Error fetching booking details');
+    }
+  }
+
+ 
+
+
 }

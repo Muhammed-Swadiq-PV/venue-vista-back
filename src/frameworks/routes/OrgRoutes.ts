@@ -58,6 +58,7 @@ router.get('/events/prices', organizerBlock, authenticateJWT, orgController.getP
 router.get('/events', orgController.getEventsDetails.bind(orgController)); /////////////////////////////////////########////////
 router.post('/default-prices', orgController.createDefaultPrice.bind(orgController));
 
-
+// get booking details including graph
+router.get('/booking-details', orgController.getBookingDetails.bind(orgController));
 
 export default router;

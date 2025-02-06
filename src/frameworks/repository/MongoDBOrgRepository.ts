@@ -390,9 +390,6 @@ export class MongoDBOrgRepository implements OrgRepository {
   }
 
 
-
-
-
   // organizer giving data about their organization
   async createPost(post: OrgPostEntity): Promise<OrgPostEntity> {
     const newPost = new OrgPostModel(post);
@@ -1143,6 +1140,18 @@ export class MongoDBOrgRepository implements OrgRepository {
     } catch (error) {
       console.error('Error in createDefaultPrice repository method:', error);
       throw new Error('Database operation failed');
+    }
+  }
+
+  async getBookingByOrganizerId(orgObjectId: ObjectId): Promise<any> {
+    try {
+      const bookingDetails = await BookingModel.find({ organizerId: orgObjectId,
+        status: { $in: ['confirmed', 'canceled'] }
+       })
+      .select('userName contactNumber email bookingDate bookedAt bookingTime eventName status')
+      return bookingDetails;
+    } catch (error) {
+      
     }
   }
 

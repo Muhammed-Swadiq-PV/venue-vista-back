@@ -65,4 +65,7 @@ export interface OrgRepository {
     findOrganizerbyPost(organizerId: string): Promise<OrgPostEntity | null>;
 
     updatePostDetails(organizerId: string, section: string, data: any): Promise<any>
+
+    // get booking details in organizer side
+    getBookingByOrganizerId(orgObjectId: ObjectId): Promise<any>
 }

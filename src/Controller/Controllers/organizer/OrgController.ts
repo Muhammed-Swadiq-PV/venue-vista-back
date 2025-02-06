@@ -489,5 +489,21 @@ export class OrgController {
     }
   }
 
+  async getBookingDetails(req: Request, res: Response): Promise<any> {
+    try{
+    const { organizerId } = req.query;
+
+    if (!organizerId || typeof organizerId !== 'string') {
+      return res.status(400).json({ error: 'missing or invalid organizerId' });
+  }
+  
+    const bookings = await this.orgUseCases.getBookingDetails(organizerId);
+    res.status(200).json({bookings});
+  } catch(error: any){
+    res.status(500).json({ error:'Internal server error'})
+
+  }
+}
+
 
 }
