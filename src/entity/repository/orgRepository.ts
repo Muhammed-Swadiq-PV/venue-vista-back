@@ -56,8 +56,8 @@ export interface OrgRepository {
     findOrganizerWithEventHallByName(name: string): Promise<EventHallAndOrganizerArray | null>
 
     getOrganizerName(postId: string): Promise<{ organizerId: string; organizerName: string } | null>
-    getOrganizerNameAndRules(organizerId: string): Promise<{ organizerName: string;phoneNumber?: string; rulesAndRestrictions?: string; paymentPolicy?: string } | null>
-    getOrganizerDetails(postId: string): Promise<{ carParkingSpace: number; bikeParkingSpace: number; indoorSeatingCapacity: number; diningCapacity: number} | null >
+    getOrganizerNameAndRules(organizerId: string): Promise<{ organizerName: string; phoneNumber?: string; rulesAndRestrictions?: string; paymentPolicy?: string } | null>
+    getOrganizerDetails(postId: string): Promise<{ carParkingSpace: number; bikeParkingSpace: number; indoorSeatingCapacity: number; diningCapacity: number } | null>
     getOrganizerIdfrompostId(hallId: string): Promise<string | null>;
     getHallWithOrganizerDetailsId(organizerId: string): Promise<EventHallWithOrganizerId | null>;
 
@@ -68,4 +68,9 @@ export interface OrgRepository {
 
     // get booking details in organizer side
     getBookingByOrganizerId(orgObjectId: ObjectId): Promise<any>
+
+
+    // get booking data based on month for graph
+    getMonthlyGraph(orgObjectId: ObjectId, monthNumber: number, yearNumber: number): Promise<any>
+    getYearlyGraph(orgObjectId: ObjectId, selectedYear: number): Promise<any>;
 }

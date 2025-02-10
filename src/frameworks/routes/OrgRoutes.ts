@@ -49,16 +49,20 @@ router.post('/rules-and-restrictions', organizerBlock, authenticateJWT,
   orgController.createRulesAndRestrictions.bind(orgController) // organizer adding rules and restrictions that show to user.
 );
 
-router.post('/cancellation-policy', organizerBlock, authenticateJWT,  orgController.cancellationPolicy.bind(orgController)); //organizer adding cancellation policy that show to user.
+router.post('/cancellation-policy', organizerBlock, authenticateJWT, orgController.cancellationPolicy.bind(orgController)); //organizer adding cancellation policy that show to user.
 router.get('/cancellation-policy', organizerBlock, authenticateJWT, orgController.getCancellationPolicy.bind(orgController));
 router.get('/rules-and-restrictions', organizerBlock, authenticateJWT, orgController.getRulesAndRestrictions.bind(orgController))
 
-router.post('/events/prices',  orgController.addPriceBySelectDay.bind(orgController));
+router.post('/events/prices', orgController.addPriceBySelectDay.bind(orgController));
 router.get('/events/prices', organizerBlock, authenticateJWT, orgController.getPriceBySelectDay.bind(orgController));
 router.get('/events', orgController.getEventsDetails.bind(orgController)); /////////////////////////////////////########////////
 router.post('/default-prices', orgController.createDefaultPrice.bind(orgController));
 
 // get booking details including graph
 router.get('/booking-details', orgController.getBookingDetails.bind(orgController));
+
+//get graph data for month and year
+router.get('/bookings/monthly', orgController.getMonthlyGraph.bind(orgController));
+router.get("/bookings/yearly", orgController.getYearlyGraph.bind(orgController));
 
 export default router;

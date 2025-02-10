@@ -350,6 +350,26 @@ export class OrgUseCases {
     }
   }
 
+
+  async getMonthlyGraph(monthNumber: number, yearNumber: number, organizerId: string): Promise<any> {
+    try {
+      const orgObjectId = new Types.ObjectId(organizerId);
+      const bookingData = await this.orgRepository.getMonthlyGraph(orgObjectId, monthNumber, yearNumber);
+      return bookingData;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getYearlyGraph(selectedYear: number, organizerId: string ): Promise<any> {
+    try {
+      const orgObjectId = new Types.ObjectId(organizerId);
+      const bookingData = await this.orgRepository.getYearlyGraph(orgObjectId, selectedYear);
+      return bookingData;
+    } catch (error) {
+      return null;
+    }
+  }
  
 
 

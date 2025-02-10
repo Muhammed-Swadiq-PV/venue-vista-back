@@ -1145,16 +1145,114 @@ export class MongoDBOrgRepository implements OrgRepository {
 
   async getBookingByOrganizerId(orgObjectId: ObjectId): Promise<any> {
     try {
-      const bookingDetails = await BookingModel.find({ organizerId: orgObjectId,
+      const bookingDetails = await BookingModel.find({
+        organizerId: orgObjectId,
         status: { $in: ['confirmed', 'canceled'] }
-       })
-      .select('userName contactNumber email bookingDate bookedAt bookingTime eventName status')
+      })
+        .select('userName contactNumber email bookingDate bookedAt bookingTime eventName status')
       return bookingDetails;
     } catch (error) {
-      
+      console.error('error fetching bookings', error);
+      throw new Error('Failed to fetch booking details');
     }
   }
 
+  async getMonthlyGraph(orgObjectId: ObjectId, monthNumber: number, yearNumber: number): Promise<any> {
+    try {
+      const startDate = new Date(yearNumber, monthNumber - 1, 1);
+      const endDate = new Date(yearNumber, monthNumber, 0, 23, 59, 59);
+
+      const bookingDetails = await BookingModel.aggregate([
+        {
+          $match: {
+            organizerId: orgObjectId,
+            status: "confirmed",
+            bookingDate: { $gte: startDate, $lte: endDate }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              $dayOfMonth: "$bookingDate"
+            },
+            bookings: {
+              $push: {
+                userName: "$userName",
+                contactNumber: "$contactNumber",
+                bookingTime: "$bookingTime",
+                eventName: "$eventName",
+                email: "$email",
+              }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $sort: { _id: 1 }
+        }
+      ]);
+      return bookingDetails;
+    } catch (error) {
+      console.error("Error fetching monthly graph data:", error);
+      throw new Error("Error fetching data");
+    }
+  }
+
+
+  async getYearlyGraph(orgObjectId: ObjectId, selectedYear: number): Promise<any> {
+    try {
+      const startDate = new Date(selectedYear, 0, 1);
+      const endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+
+      const bookingDetails = await BookingModel.aggregate([
+        {
+          $match: {
+            organizerId : orgObjectId,
+            status : "confirmed",
+            bookingDate: {$gte: startDate, $lte: endDate}
+          }
+        },
+        {
+          $group: {
+            _id:{
+              month: { $month: "$bookingDate"},
+              bookingType: "$bookingTime",
+            },
+            count: {$sum: 1},
+          },
+        },
+        {
+          $group: {
+            _id: "$_id.month",
+            bookings: {
+              $push: {
+                type: "$_id.bookingType",
+                count: "$count",
+              },
+            },
+          },
+        },
+        {
+          $sort: { _id: 1 }, // Sort by month (Jan → Dec)
+        },
+      ]);
+
+      const formattedData = Array.from({ length: 12 }, (_, index) => {
+        const monthData = bookingDetails.find((item) => item._id === index + 1);
+        return {
+          month: new Date(selectedYear, index, 1).toLocaleString("default", { month: "short" }), // Convert to "Jan", "Feb"...
+          day: monthData?.bookings.find((b:any) => b.type === "day")?.count || 0,
+          night: monthData?.bookings.find((b:any) => b.type === "night")?.count || 0,
+          fullDay: monthData?.bookings.find((b:any) => b.type === "full")?.count || 0,
+        };
+      });
+  
+      return formattedData;
+    } catch (error) {
+      console.error("Error fetching yearly data:", error);
+      throw error;
+    }
+  }
 
 }
 

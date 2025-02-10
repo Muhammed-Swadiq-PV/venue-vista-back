@@ -8,6 +8,7 @@ import { generateOrgAccessToken } from '../../../utils/tokenUtils';
 import { generateOrgRefreshToken } from '../../../utils/tokenUtils';
 import { saveRefreshToken } from '../../../usecases/RefreshTokenUseCases';
 import dotenv from 'dotenv';
+import { error } from 'console';
 
 dotenv.config();
 
@@ -490,20 +491,79 @@ export class OrgController {
   }
 
   async getBookingDetails(req: Request, res: Response): Promise<any> {
-    try{
-    const { organizerId } = req.query;
+    try {
+      const { organizerId } = req.query;
 
-    if (!organizerId || typeof organizerId !== 'string') {
-      return res.status(400).json({ error: 'missing or invalid organizerId' });
-  }
-  
-    const bookings = await this.orgUseCases.getBookingDetails(organizerId);
-    res.status(200).json({bookings});
-  } catch(error: any){
-    res.status(500).json({ error:'Internal server error'})
+      if (!organizerId || typeof organizerId !== 'string') {
+        return res.status(400).json({ error: 'missing or invalid organizerId' });
+      }
 
+      const bookings = await this.orgUseCases.getBookingDetails(organizerId);
+      res.status(200).json({ bookings });
+    } catch (error: any) {
+      res.status(500).json({ error: 'Internal server error' })
+
+    }
   }
-}
+
+  async getMonthlyGraph(req: Request, res: Response): Promise<any> {
+    try {
+      const { organizerId, selectedMonth, selectedYear } = req.query;
+   
+      // console.log('inside getmonthlygraph', typeof(organizerId), selectedMonth, selectedYear)
+      if (!organizerId || typeof organizerId !== "string") {
+        return res.status(400).json({ error: "Organizer ID is required and must be a string" });
+      }
+      if (!selectedMonth || !selectedYear) {
+        res.status(400).json({ error: "year and month required" });
+      }
+
+      const monthNumber = Number(selectedMonth);
+      const yearNumber = Number(selectedYear);;;
+
+      if (isNaN(monthNumber) || isNaN(yearNumber)) {
+        res.status(400).json({ error: "Invalid year or month format" });
+      }
+
+      const result = await this.orgUseCases.getMonthlyGraph( monthNumber, yearNumber, organizerId);
+      console.log("Bookings inside:", result);
+      if (result) {
+        res.status(200).json(result);
+      } else {
+        res.status(400).json({ error: "No data found for the given month" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Internal server error", error: error.message })
+    }
+  }
+
+
+ async getYearlyGraph(req: Request, res: Response): Promise<any> {
+  try {
+    console.log('inside get yearly graph')
+    const { yearSelected, organizerId } = req.query;
+
+    if(!yearSelected){
+      res.status(400).json({error: 'year is required'});
+    }
+
+    if (!organizerId || typeof organizerId !== "string") {
+      return res.status(400).json({ error: "Organizer ID is required and must be a string" });
+    }
+
+    const selectedYear = Number(yearSelected);
+
+    const result = await this.orgUseCases.getYearlyGraph(selectedYear , organizerId);
+    console.log(result, 'result for the selected year')
+    if(result){
+      res.status(200).json(result);
+    } else {
+      res.status(400).json({error: 'no data found for the selected year'});
+    }
+  } catch (error: any) {
+    res.status(500).json({error: 'server side error'});
+  }
+ }
 
 
 }
